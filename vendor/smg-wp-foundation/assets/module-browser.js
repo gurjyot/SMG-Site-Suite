@@ -64,7 +64,7 @@
 
       if (enabled && moduleRisk === 'high') {
         const title = toggle.dataset.title || toggle.value;
-        const message = `Enable high-risk module "${title}"? Review its settings and recovery path first.`;
+        const message = `Enable "${title}"? This module can affect site access or behavior, so make sure you know how to undo the change.`;
         if (!window.confirm(message)) {
           toggle.checked = false;
           return;
@@ -167,30 +167,47 @@
     if (event.key === 'Escape' && drawer && !drawer.hidden) closeDrawer();
   });
 
+  const updateMediaPreview = (button, attachment) => {
+    const target = document.getElementById(button.dataset.target || '');
+    if (!target || !attachment) return;
+
+    target.value = attachment.id || '';
+
+    const field = button.closest('.smg-foundation-media-field');
+    if (!field) return;
+
+    let preview = field.querySelector('img');
+    if (!preview) {
+      preview = document.createElement('img');
+      preview.style.cssText = 'display:block;max-width:80px;height:auto;margin-bottom:8px';
+      field.prepend(preview);
+    }
+
+    preview.src = attachment.sizes?.thumbnail?.url || attachment.url || '';
+  };
+
+  const chooseMedia = (button) => {
+    if (!window.wp?.media) return;
+
+    const picker = window.wp.media({
+      title: 'Choose Media',
+      library: { type: 'image' },
+      multiple: false,
+    });
+
+    picker.once('select', () => {
+      const selection = picker.state().get('selection');
+      updateMediaPreview(button, selection.first()?.toJSON());
+    });
+
+    picker.open();
+  };
+
   root.addEventListener('click', (event) => {
     const selectButton = event.target.closest('.smg-foundation-media-select');
-    if (selectButton && window.wp?.media) {
+    if (selectButton) {
       event.preventDefault();
-      const target = document.getElementById(selectButton.dataset.target || '');
-      if (!target) return;
-      const frame = wp.media({ title: 'Choose Media', multiple: false, library: { type: 'image' } });
-      frame.on('select', () => {
-        const attachment = frame.state().get('selection').first()?.toJSON();
-        if (!attachment) return;
-        target.value = attachment.id || '';
-        const field = selectButton.closest('.smg-foundation-media-field');
-        let preview = field?.querySelector('img');
-        if (!preview && field) {
-          preview = document.createElement('img');
-          preview.style.maxWidth = '80px';
-          preview.style.height = 'auto';
-          preview.style.display = 'block';
-          preview.style.marginBottom = '8px';
-          field.prepend(preview);
-        }
-        if (preview) preview.src = attachment.sizes?.thumbnail?.url || attachment.url || '';
-      });
-      frame.open();
+      chooseMedia(selectButton);
       return;
     }
 
