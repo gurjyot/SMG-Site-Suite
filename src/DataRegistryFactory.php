@@ -71,6 +71,8 @@ final class DataRegistryFactory {
             ->register('content-expiration','post_meta','_smg_site_suite_content_expiration','configuration')
             ->register('content-expiration','cron','smg_site_suite_content_expire','generated')
             ->register('internal-content-notes','post_meta','_smg_site_suite_internal_note','user_data')
+            ->register('require-featured-image','option','smg_site_suite_require_featured_image','configuration')
+            ->register('upload-size-limit','option','smg_site_suite_upload_size_limit','configuration')
             ->register('auto-update-email-controls','option','smg_site_suite_update_emails','configuration')
             ->register('temporary-login','user_meta','_smg_site_suite_temp_login','generated')
             ->register('temporary-login','cron','smg_site_suite_temp_login_cleanup','generated')
