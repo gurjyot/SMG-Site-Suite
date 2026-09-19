@@ -66,6 +66,17 @@ jobs:
           wp option update smg_site_suite_active_modules '[]' --format=json
           wp eval-file wp-content/plugins/smg-site-suite/tests/integration/inactive-modules-smoke.php
 
+      - name: Measure zero-module bootstrap overhead
+        if: matrix.wordpress == '7.1.1'
+        run: |
+          cd /tmp/smg-wp
+          wp plugin deactivate smg-site-suite --quiet
+          wp eval-file "$GITHUB_WORKSPACE/tests/integration/performance-measure.php" > /tmp/smg-baseline.json
+          wp plugin activate smg-site-suite --quiet
+          wp option update smg_site_suite_active_modules '[]' --format=json --quiet
+          wp eval-file "$GITHUB_WORKSPACE/tests/integration/performance-measure.php" > /tmp/smg-suite.json
+          php "$GITHUB_WORKSPACE/tests/integration/compare-performance.php" /tmp/smg-baseline.json /tmp/smg-suite.json
+
       - name: Enable representative HPOS-safe modules
         run: |
           cd /tmp/smg-wp
