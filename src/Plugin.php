@@ -9,6 +9,9 @@ final class Plugin {
         (new ModuleInstaller($registry,$state,'smg_site_suite_installed'))->initializeDefaultsOnce();
         $manager=new ModuleManager($registry,$state,$deps);$loader=new ModuleLoader($registry,$state,$deps);
         add_action('plugins_loaded',[$loader,'loadActive'],5);
-        if(is_admin())(new ModuleBrowser($manager,['page_title'=>__('SMG Site Suite','smg-site-suite'),'menu_title'=>__('Site Suite','smg-site-suite'),'menu_slug'=>'smg-site-suite','asset_url'=>SMG_SITE_SUITE_URL.'vendor/smg-wp-foundation/assets','version'=>SMG_SITE_SUITE_VERSION]))->boot();
+        if(is_admin()){
+            (new ConfigurationsPage($manager))->boot();
+            (new ModuleBrowser($manager,['page_title'=>__('SMG Site Suite','smg-site-suite'),'menu_title'=>__('Site Suite','smg-site-suite'),'menu_slug'=>'smg-site-suite','asset_url'=>SMG_SITE_SUITE_URL.'vendor/smg-wp-foundation/assets','version'=>SMG_SITE_SUITE_VERSION]))->boot();
+        }
     }
 }
