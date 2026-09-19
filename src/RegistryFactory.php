@@ -95,6 +95,12 @@ use SMG\SiteSuite\Modules\Admin\DuplicateNavigationMenu;
 use SMG\SiteSuite\Modules\Content\AutoFeaturedImage;
 use SMG\SiteSuite\Modules\Email\AutoUpdateEmailControls;
 use SMG\SiteSuite\Modules\Content\DefaultFeaturedImage;
+use SMG\SiteSuite\Modules\Content\PublicPreviewDrafts;
+use SMG\SiteSuite\Modules\Content\ReadingTime;
+use SMG\SiteSuite\Modules\Content\ExternalPermalinks;
+use SMG\SiteSuite\Modules\Users\LocalUserAvatar;
+use SMG\SiteSuite\Modules\Utilities\CustomBodyClasses;
+use SMG\SiteSuite\Modules\Admin\AdminTaxonomyFilters;
 final class RegistryFactory {
     public static function make():ModuleRegistry{
         $r=(new ModuleRegistry())->addCategory('admin',__('Admin','smg-site-suite'))->addCategory('content',__('Content','smg-site-suite'))->addCategory('media',__('Media','smg-site-suite'))->addCategory('performance',__('Performance','smg-site-suite'))->addCategory('security',__('Security','smg-site-suite'))->addCategory('utilities',__('Utilities','smg-site-suite'))->addCategory('users',__('Users','smg-site-suite'))->addCategory('email',__('Email','smg-site-suite'))->addCategory('woocommerce',__('WooCommerce','smg-site-suite'));
@@ -192,6 +198,12 @@ final class RegistryFactory {
             ['duplicate-navigation-menu','Duplicate Navigation Menu','Duplicate a classic WordPress navigation menu and its items from Appearance.','admin',DuplicateNavigationMenu::class,['menus','duplicate','admin'],['admin'],'low',false,[]],
             ['auto-featured-image','Auto Featured Image','Use the first attached image as the featured image when selected post types do not already have one.','content',AutoFeaturedImage::class,['featured image','media','content'],['admin'],'low',true,[]],
             ['default-featured-image','Default Featured Image','Use a Media Library image as a non-destructive fallback featured image for selected post types.','content',DefaultFeaturedImage::class,['featured image','fallback','media'],['all'],'low',true,[]],
+            ['public-preview-drafts','Public Preview Drafts','Create expiring public preview links for draft, pending, or scheduled content.','content',PublicPreviewDrafts::class,['preview','draft','content'],['all'],'medium',true,[]],
+            ['reading-time','Reading Time','Provide a lightweight reading-time shortcode with configurable reading speed and label.','content',ReadingTime::class,['reading time','content','shortcode'],['all'],'low',true,[]],
+            ['external-permalinks','External Permalinks','Optionally point individual posts, pages, or CPT entries to external URLs.','content',ExternalPermalinks::class,['permalink','redirect','external'],['all'],'medium',false,[]],
+            ['local-user-avatar','Local User Avatar','Use Media Library images as local WordPress user avatars instead of external avatar services.','users',LocalUserAvatar::class,['avatar','users','media'],['all'],'low',false,[]],
+            ['custom-body-classes','Custom Body Classes','Add managed global CSS classes to the public body element.','utilities',CustomBodyClasses::class,['css','body','classes'],['frontend'],'low',true,[]],
+            ['admin-taxonomy-filters','Admin Taxonomy Filters','Add hierarchical taxonomy dropdown filters to supported post-type list tables.','admin',AdminTaxonomyFilters::class,['taxonomy','admin','filters'],['admin'],'low',false,[]],
             ['auto-update-email-controls','Auto-Update Email Controls','Optionally suppress WordPress core, plugin, and theme automatic update notification emails.','email',AutoUpdateEmailControls::class,['email','updates','notifications'],['all'],'low',true,[]],
             ['sanitize-upload-filenames','Sanitize Upload Filenames','Normalize new upload filenames to lowercase ASCII kebab-case.','media',SanitizeUploadFilenames::class,['media','filenames','uploads'],['admin','ajax','rest'],'low',false,[]],
             ['temporary-login','Temporary Login','Create one-use expiring administrator access links for support or development.','users',TemporaryLogin::class,['temporary login','support','access'],['all'],'high',false,[]],
