@@ -31,8 +31,8 @@ final class DuplicateNavigationMenu implements ModuleInterface {
         if(!current_user_can('edit_theme_options'))wp_die(esc_html__('Insufficient permissions.','smg-site-suite'));
         check_admin_referer('smg_site_suite_duplicate_menu');
 
-        $sourceId=absint($_POST['menu_id']??0);
-        $name=sanitize_text_field((string)($_POST['new_name']??''));
+        $sourceId=isset($_POST['menu_id'])?absint(wp_unslash($_POST['menu_id'])):0;
+        $name=isset($_POST['new_name'])?sanitize_text_field(wp_unslash($_POST['new_name'])):'';
         if($sourceId<=0||$name==='')wp_die(esc_html__('Source menu and new name are required.','smg-site-suite'));
 
         $newMenuId=wp_create_nav_menu($name);
