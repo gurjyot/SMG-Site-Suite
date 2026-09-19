@@ -76,6 +76,7 @@ final class AdminMenuOrganizer implements ModuleInterface {
             $locked=$slug==='index.php';
 
             echo '<section style="margin:0 0 12px;border:1px solid #dcdcde;border-radius:10px;background:#fff;overflow:hidden">';
+            echo '<input type="hidden" name="all_main[]" value="'.esc_attr($slug).'">';
             echo '<label style="display:flex;align-items:center;gap:10px;padding:14px 16px;font-weight:600;background:#f6f7f7">';
             echo '<input type="checkbox" name="visible_main[]" value="'.esc_attr($slug).'" '.checked($visible,true,false).' '.disabled($locked,true,false).'> '.esc_html($label);
             if($locked)echo '<span style="font-weight:400;color:#646970">'.esc_html__('(required)','smg-site-suite').'</span>';
@@ -89,6 +90,7 @@ final class AdminMenuOrganizer implements ModuleInterface {
                     $subLabel=wp_strip_all_tags((string)$subItem[0]);
                     $encoded=$slug.self::SEP.$child;
                     $subVisible=!in_array($encoded,$hiddenSub,true);
+                    echo '<input type="hidden" name="all_sub[]" value="'.esc_attr($encoded).'">';
                     echo '<label style="display:block;padding:6px 0"><input type="checkbox" name="visible_sub[]" value="'.esc_attr($encoded).'" '.checked($subVisible,true,false).'> '.esc_html($subLabel).'</label>';
                 }
                 echo '</div>';
@@ -107,25 +109,21 @@ final class AdminMenuOrganizer implements ModuleInterface {
         if(!current_user_can('manage_options'))wp_die(esc_html__('Insufficient permissions.','smg-site-suite'));
         check_admin_referer('smg_site_suite_save_admin_menu');
 
-        global $menu,$submenu;
-
         $visibleMain=isset($_POST['visible_main'])&&is_array($_POST['visible_main'])?array_map('sanitize_text_field',wp_unslash($_POST['visible_main'])):[];
         $visibleSub=isset($_POST['visible_sub'])&&is_array($_POST['visible_sub'])?array_map('sanitize_text_field',wp_unslash($_POST['visible_sub'])):[];
+        $allMain=isset($_POST['all_main'])&&is_array($_POST['all_main'])?array_map('sanitize_text_field',wp_unslash($_POST['all_main'])):[];
+        $allSub=isset($_POST['all_sub'])&&is_array($_POST['all_sub'])?array_map('sanitize_text_field',wp_unslash($_POST['all_sub'])):[];
 
         $hiddenMain=[];$hiddenSub=[];
 
-        foreach((array)$menu as $item){
-            if(!isset($item[0],$item[2])||$item[0]==='')continue;
-            $slug=(string)$item[2];
-            if($slug==='smg-site-suite'||$slug==='index.php')continue;
+        foreach($allMain as $slug){
+            if($slug==='smg-site-suite'||$slug==='index.php'||$slug==='')continue;
             if(!in_array($slug,$visibleMain,true))$hiddenMain[]=$slug;
+        }
 
-            if(empty($submenu[$slug])||!is_array($submenu[$slug]))continue;
-            foreach($submenu[$slug] as $subItem){
-                if(!isset($subItem[2]))continue;
-                $encoded=$slug.self::SEP.(string)$subItem[2];
-                if(!in_array($encoded,$visibleSub,true))$hiddenSub[]=$encoded;
-            }
+        foreach($allSub as $encoded){
+            if($encoded===''||!str_contains($encoded,self::SEP))continue;
+            if(!in_array($encoded,$visibleSub,true))$hiddenSub[]=$encoded;
         }
 
         update_option(self::OPTION,[
