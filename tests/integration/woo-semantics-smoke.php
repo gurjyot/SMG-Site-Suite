@@ -96,8 +96,10 @@ try{
 
     // Free Shipping Only: preserve all rates if free shipping is unavailable, otherwise return free only.
     $freeOnly=new \SMG\SiteSuite\Modules\WooCommerce\FreeShippingOnly();
-    $flat=new WC_Shipping_Rate('flat_rate:1','Flat',50,[],'flat_rate');
-    $free=new WC_Shipping_Rate('free_shipping:1','Free',0,[],'free_shipping');
+    $flat=new WC_Shipping_Rate('flat_rate:1','Flat',50,[]);
+    $flat->set_method_id('flat_rate');
+    $free=new WC_Shipping_Rate('free_shipping:1','Free',0,[]);
+    $free->set_method_id('free_shipping');
     $rates=$freeOnly->rates(['flat'=>$flat],[]);
     $assert(isset($rates['flat'])&&count($rates)===1,'Free Shipping Only removed paid rates when no free rate existed.');
     $rates=$freeOnly->rates(['flat'=>$flat,'free'=>$free],[]);
@@ -131,7 +133,9 @@ try{
     WC()->cart->add_to_cart($productId,1);
     WC()->cart->calculate_totals();
     $auto->apply();
-    $assert(WC()->cart->has_discount('smg-auto'),'Auto Apply Coupon did not apply the configured coupon.');
+    $configuredCode=(string)($auto->settings()['coupon']??'');
+    $assert($configuredCode!=='','Auto Apply Coupon did not persist a normalized coupon code.');
+    $assert(WC()->cart->has_discount($configuredCode),'Auto Apply Coupon did not apply the configured coupon.');
 
     // Hook-level evidence for Store API support where explicitly implemented.
     $amountRules->register();
