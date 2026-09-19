@@ -11,6 +11,7 @@ final class TemporaryLogin implements ModuleInterface {
         add_action('admin_menu',[$this,'menu'],50);
         add_action('admin_post_smg_site_suite_create_temp_login',[$this,'create']);
         add_action('init',[$this,'consume'],1);
+        add_action('smg_site_suite_temp_login_cleanup',[$this,'cleanup']);
     }
 
     public function menu():void{
@@ -42,13 +43,14 @@ final class TemporaryLogin implements ModuleInterface {
         if($email==='')wp_die(esc_html__('Valid email required.','smg-site-suite'));
 
         $user=get_user_by('email',$email);
+        $created=false;
         if(!$user){
             $username=sanitize_user(strstr($email,'@',true)?:'temp',true);
             $base=$username!==''?$username:'temp';$candidate=$base;$n=1;
             while(username_exists($candidate)){$candidate=$base.$n;$n++;}
             $id=wp_create_user($candidate,wp_generate_password(32,true,true),$email);
             if(is_wp_error($id))wp_die(esc_html($id->get_error_message()));
-            $user=new \WP_User($id);$user->set_role('administrator');
+            $user=new \WP_User($id);$user->set_role('administrator');$created=true;
         }
 
         $token=wp_generate_password(40,false,false);
@@ -56,10 +58,20 @@ final class TemporaryLogin implements ModuleInterface {
             'hash'=>wp_hash_password($token),
             'expires'=>time()+($hours*HOUR_IN_SECONDS),
             'created_by'=>get_current_user_id(),
+            'temporary_user'=>$created,
         ]);
+        if($created&&!wp_next_scheduled('smg_site_suite_temp_login_cleanup',[$user->ID]))wp_schedule_single_event(time()+($hours*HOUR_IN_SECONDS)+60,'smg_site_suite_temp_login_cleanup',[$user->ID]);
 
         wp_safe_redirect(add_query_arg(['page'=>'smg-site-suite-temp-login','token'=>rawurlencode($token)],admin_url('admin.php')));
         exit;
+    }
+
+    public function cleanup(int $userId):void{
+        $data=get_user_meta($userId,self::META,true);
+        if(!is_array($data)||empty($data['temporary_user']))return;
+        if((int)($data['expires']??0)>time())return;
+        require_once ABSPATH.'wp-admin/includes/user.php';
+        wp_delete_user($userId);
     }
 
     public function consume():void{
