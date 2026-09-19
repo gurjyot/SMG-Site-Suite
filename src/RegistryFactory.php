@@ -66,6 +66,10 @@ use SMG\SiteSuite\Modules\WooCommerce\WooAssetControl;
 use SMG\SiteSuite\Modules\WooCommerce\CartFragmentsControl;
 use SMG\SiteSuite\Modules\WooCommerce\MyAccountRedirects;
 use SMG\SiteSuite\Modules\WooCommerce\ProductPriceHistory;
+use SMG\SiteSuite\Modules\WooCommerce\DisableMarketplaceSuggestions;
+use SMG\SiteSuite\Modules\WooCommerce\CouponRoleRestrictions;
+use SMG\SiteSuite\Modules\WooCommerce\CouponMaximumDiscount;
+use SMG\SiteSuite\Modules\WooCommerce\CustomOrderStatuses;
 final class RegistryFactory {
     public static function make():ModuleRegistry{
         $r=(new ModuleRegistry())->addCategory('admin',__('Admin','smg-site-suite'))->addCategory('content',__('Content','smg-site-suite'))->addCategory('media',__('Media','smg-site-suite'))->addCategory('performance',__('Performance','smg-site-suite'))->addCategory('security',__('Security','smg-site-suite'))->addCategory('utilities',__('Utilities','smg-site-suite'))->addCategory('users',__('Users','smg-site-suite'))->addCategory('email',__('Email','smg-site-suite'))->addCategory('woocommerce',__('WooCommerce','smg-site-suite'));
@@ -142,6 +146,10 @@ final class RegistryFactory {
             ['cart-fragments-control','Cart Fragments Control','Keep WooCommerce cart fragments only where needed, use defaults, or disable them.','woocommerce',CartFragmentsControl::class,['woocommerce','performance','fragments'],['frontend'],'medium',true,['plugins'=>['woocommerce/woocommerce.php']]],
             ['my-account-redirects','My Account Redirects','Set optional WooCommerce login, registration, and logout destinations.','woocommerce',MyAccountRedirects::class,['woocommerce','account','redirect'],['all'],'medium',true,['plugins'=>['woocommerce/woocommerce.php']]],
             ['product-price-history','Product Price History','Record recent WooCommerce regular and sale price changes in product meta and show them in product admin.','woocommerce',ProductPriceHistory::class,['woocommerce','price','history'],['admin'],'low',false,['plugins'=>['woocommerce/woocommerce.php']]],
+            ['disable-marketplace-suggestions','Disable Marketplace Suggestions','Hide WooCommerce marketplace recommendation prompts in wp-admin.','woocommerce',DisableMarketplaceSuggestions::class,['woocommerce','admin','marketplace'],['admin'],'low',false,['plugins'=>['woocommerce/woocommerce.php']]],
+            ['coupon-role-restrictions','Coupon Role Restrictions','Restrict individual WooCommerce coupons to selected WordPress user roles.','woocommerce',CouponRoleRestrictions::class,['woocommerce','coupon','roles'],['all'],'medium',true,['plugins'=>['woocommerce/woocommerce.php']]],
+            ['coupon-maximum-discount','Coupon Maximum Discount','Add an optional per-coupon maximum discount amount with a configurable default.','woocommerce',CouponMaximumDiscount::class,['woocommerce','coupon','maximum discount'],['all'],'medium',true,['plugins'=>['woocommerce/woocommerce.php']]],
+            ['custom-order-statuses','Custom Order Statuses','Register lightweight custom WooCommerce order statuses from simple slug/label definitions.','woocommerce',CustomOrderStatuses::class,['woocommerce','orders','status'],['all'],'medium',true,['plugins'=>['woocommerce/woocommerce.php']]],
         ];
         foreach($defs as [$slug,$name,$description,$category,$class,$tags,$contexts,$risk,$settings,$dependencies]){
             $r->register(new ModuleDefinition(['slug'=>$slug,'name'=>__($name,'smg-site-suite'),'description'=>__($description,'smg-site-suite'),'category'=>$category,'class'=>$class,'tags'=>$tags,'contexts'=>$contexts,'risk'=>$risk,'has_settings'=>$settings,'dependencies'=>$dependencies]));
