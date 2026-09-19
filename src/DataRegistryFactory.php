@@ -60,6 +60,8 @@ final class DataRegistryFactory {
             ->register('disable-user-account','user_meta','_smg_site_suite_account_disabled','configuration')
             ->register('hide-admin-bar-by-role','option','smg_site_suite_hide_admin_bar_roles','configuration')
             ->register('environment-indicator','option','smg_site_suite_environment_indicator','configuration')
+            ->register('auto-featured-image','option','smg_site_suite_auto_featured_image','configuration')
+            ->register('auto-update-email-controls','option','smg_site_suite_update_emails','configuration')
             ->register('temporary-login','user_meta','_smg_site_suite_temp_login','generated')
             ->register('temporary-login','cron','smg_site_suite_temp_login_cleanup','generated')
             ->register('activity-log-lite','option','smg_site_suite_activity_log','generated')
