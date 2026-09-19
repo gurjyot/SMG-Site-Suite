@@ -64,7 +64,7 @@ final class FomoSalesNotifications implements SettingsModuleInterface, Activatab
             'limit'=>20,
             'orderby'=>'date',
             'order'=>'DESC',
-            'status'=>array_keys(wc_get_is_paid_statuses()),
+            'status'=>wc_get_is_paid_statuses(),
             'return'=>'objects',
         ]);
 
