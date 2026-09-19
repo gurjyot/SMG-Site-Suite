@@ -25,6 +25,10 @@ use SMG\SiteSuite\Modules\Admin\FooterTimezone;
 use SMG\SiteSuite\Modules\Utilities\SearchVisibilityStatus;
 use SMG\SiteSuite\Modules\Users\LastLoginColumn;
 use SMG\SiteSuite\Modules\Users\RegistrationDateColumn;
+use SMG\SiteSuite\Modules\Performance\CleanWpHead;
+use SMG\SiteSuite\Modules\Security\DisableXmlRpc;
+use SMG\SiteSuite\Modules\Security\DisableApplicationPasswords;
+use SMG\SiteSuite\Modules\WooCommerce\OrderPhoneColumn;
 final class RegistryFactory {
     public static function make():ModuleRegistry{
         $r=(new ModuleRegistry())->addCategory('admin',__('Admin','smg-site-suite'))->addCategory('content',__('Content','smg-site-suite'))->addCategory('media',__('Media','smg-site-suite'))->addCategory('performance',__('Performance','smg-site-suite'))->addCategory('security',__('Security','smg-site-suite'))->addCategory('utilities',__('Utilities','smg-site-suite'))->addCategory('users',__('Users','smg-site-suite'))->addCategory('woocommerce',__('WooCommerce','smg-site-suite'));
