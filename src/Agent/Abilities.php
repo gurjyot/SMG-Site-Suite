@@ -5,6 +5,7 @@ use SMG\SiteSuite\Modules\Admin\CronViewer;
 use SMG\SiteSuite\Modules\Admin\DatabaseTableSizes;
 use SMG\SiteSuite\Modules\Admin\ProtectedOwner;
 use SMG\SiteSuite\Modules\Admin\SystemSummary;
+use SMG\SiteSuite\Modules\Admin\SiteHealthExtensions;
 use SMG\SiteSuite\Modules\Admin\RewriteRulesViewer;
 use SMG\SiteSuite\Modules\Admin\SiteInventoryExport;
 use SMG\SiteSuite\Modules\Utilities\NotFoundTracker;
@@ -387,6 +388,23 @@ final class Abilities {
                 'meta' => $this->meta(true, false, true),
             ]
         );
+
+        wp_register_ability(
+            'smg-site-suite/get-site-health',
+            [
+                'label' => __('Get Site Health Checks', 'smg-site-suite'),
+                'description' => __(
+                    'Returns structured Site Suite health checks for HTTPS, debug mode, search visibility, and WP-Cron.',
+                    'smg-site-suite'
+                ),
+                'category' => self::CATEGORY,
+                'input_schema' => $this->emptyInputSchema(),
+                'output_schema' => $this->siteHealthSchema(),
+                'execute_callback' => [$this, 'getSiteHealth'],
+                'permission_callback' => [$this, 'canManageSiteSuite'],
+                'meta' => $this->meta(true, false, true),
+            ]
+        );
     }
 
     public function canManageSiteSuite(): bool {
@@ -687,6 +705,25 @@ final class Abilities {
             : '';
 
         return (new RewriteRulesViewer())->rules($limit, $search);
+    }
+
+    public function getSiteHealth() {
+        $active = $this->requireActiveModule('site-health-extensions');
+        if (is_wp_error($active)) {
+            return $active;
+        }
+
+        $checks = (new SiteHealthExtensions())->checks();
+        $recommended = count(array_filter(
+            $checks,
+            static fn(array $check): bool => ($check['status'] ?? '') !== 'good'
+        ));
+
+        return [
+            'count' => count($checks),
+            'recommended' => $recommended,
+            'checks' => $checks,
+        ];
     }
 
     private function requireActiveModule(string $slug) {
@@ -1056,6 +1093,31 @@ final class Abilities {
                 ],
             ],
             'required' => ['stored_count', 'count', 'rules'],
+            'additionalProperties' => false,
+        ];
+    }
+
+    private function siteHealthSchema(): array {
+        return [
+            'type' => 'object',
+            'properties' => [
+                'count' => ['type' => 'integer'],
+                'recommended' => ['type' => 'integer'],
+                'checks' => [
+                    'type' => 'array',
+                    'items' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'id' => ['type' => 'string'],
+                            'status' => ['type' => 'string'],
+                            'message' => ['type' => 'string'],
+                        ],
+                        'required' => ['id', 'status', 'message'],
+                        'additionalProperties' => false,
+                    ],
+                ],
+            ],
+            'required' => ['count', 'recommended', 'checks'],
             'additionalProperties' => false,
         ];
     }
