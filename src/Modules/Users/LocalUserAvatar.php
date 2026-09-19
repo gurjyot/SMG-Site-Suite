@@ -13,6 +13,8 @@ final class LocalUserAvatar implements ModuleInterface {
         add_action('edit_user_profile_update',[$this,'save']);
         add_filter('get_avatar_data',[$this,'avatar'],20,2);
         add_action('admin_enqueue_scripts',[$this,'media']);
+        add_action('admin_footer-profile.php',[$this,'script']);
+        add_action('admin_footer-user-edit.php',[$this,'script']);
     }
 
     public function media(string $hook):void{
@@ -24,9 +26,35 @@ final class LocalUserAvatar implements ModuleInterface {
         $id=(int)get_user_meta($user->ID,self::META,true);
         echo '<h2>'.esc_html__('Local Avatar','smg-site-suite').'</h2><table class="form-table"><tr><th>'.esc_html__('Avatar image','smg-site-suite').'</th><td>';
         if($id>0)echo wp_get_attachment_image($id,'thumbnail',false,['style'=>'display:block;max-width:96px;height:auto;margin-bottom:8px']);
-        echo '<input type="number" min="0" name="smg_avatar_id" value="'.esc_attr((string)$id).'" class="small-text"> <span class="description">'.esc_html__('Media attachment ID.','smg-site-suite').'</span>';
+        echo '<div class="smg-local-avatar-field">';
+        echo '<input type="hidden" id="smg_avatar_id" name="smg_avatar_id" value="'.esc_attr((string)$id).'">';
+        echo '<button type="button" class="button" id="smg_choose_avatar">'.esc_html__('Choose Avatar','smg-site-suite').'</button> ';
+        echo '<button type="button" class="button-link-delete" id="smg_clear_avatar">'.esc_html__('Clear','smg-site-suite').'</button></div>';
         wp_nonce_field('smg_site_suite_avatar_'.$user->ID,'smg_site_suite_avatar_nonce');
         echo '</td></tr></table>';
+    }
+
+    public function script():void{
+        if(!current_user_can('edit_users')&&!current_user_can('edit_user',get_current_user_id()))return;
+        echo '<script>
+        document.addEventListener("click",function(e){
+          if(e.target&&e.target.id==="smg_choose_avatar"){
+            e.preventDefault();
+            const frame=wp.media({title:"Choose Avatar",multiple:false,library:{type:"image"}});
+            frame.on("select",function(){
+              const attachment=frame.state().get("selection").first().toJSON();
+              const input=document.getElementById("smg_avatar_id");
+              if(input)input.value=attachment.id||"";
+            });
+            frame.open();
+          }
+          if(e.target&&e.target.id==="smg_clear_avatar"){
+            e.preventDefault();
+            const input=document.getElementById("smg_avatar_id");
+            if(input)input.value="";
+          }
+        });
+        </script>';
     }
 
     public function save(int $userId):void{
