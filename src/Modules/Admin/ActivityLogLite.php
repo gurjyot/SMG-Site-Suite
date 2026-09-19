@@ -15,6 +15,7 @@ final class ActivityLogLite implements SettingsModuleInterface {
         add_action('switch_theme',fn($name)=>$this->record('theme','Theme switched',['theme'=>$name]));
         add_action('save_post',[$this,'postSaved'],20,3);
         add_action('admin_menu',[$this,'menu'],60);
+        add_action('admin_post_smg_site_suite_clear_activity_log',[$this,'clear']);
     }
 
     public function settingsSchema():array{
@@ -43,11 +44,30 @@ final class ActivityLogLite implements SettingsModuleInterface {
     public function render():void{
         if(!current_user_can('manage_options'))return;
         $log=get_option(self::OPTION,[]);if(!is_array($log))$log=[];
-        echo '<div class="wrap"><h1>'.esc_html__('Activity Log','smg-site-suite').'</h1><table class="widefat striped"><thead><tr><th>'.esc_html__('Time','smg-site-suite').'</th><th>'.esc_html__('Type','smg-site-suite').'</th><th>'.esc_html__('User','smg-site-suite').'</th><th>'.esc_html__('Activity','smg-site-suite').'</th></tr></thead><tbody>';
+        $type=isset($_GET['type'])?sanitize_key(wp_unslash($_GET['type'])):'';
+        $userId=isset($_GET['user_id'])?absint($_GET['user_id']):0;
+        if($type!=='')$log=array_values(array_filter($log,static fn(array $row):bool=>($row['type']??'')===$type));
+        if($userId>0)$log=array_values(array_filter($log,static fn(array $row):bool=>(int)($row['user']??0)===$userId));
+
+        echo '<div class="wrap"><h1>'.esc_html__('Activity Log','smg-site-suite').'</h1>';
+        echo '<form method="get" style="display:flex;gap:8px;align-items:end;margin:12px 0 16px"><input type="hidden" name="page" value="smg-site-suite-activity-log"><label>'.esc_html__('Type','smg-site-suite').'<br><select name="type"><option value="">'.esc_html__('All','smg-site-suite').'</option>';
+        foreach(['login','logout','plugin','theme','content'] as $option)echo '<option value="'.esc_attr($option).'" '.selected($type,$option,false).'>'.esc_html(ucfirst($option)).'</option>';
+        echo '</select></label><label>'.esc_html__('User ID','smg-site-suite').'<br><input type="number" min="1" name="user_id" value="'.esc_attr($userId?:'').'"></label><button class="button">'.esc_html__('Filter','smg-site-suite').'</button></form>';
+        $clear=wp_nonce_url(admin_url('admin-post.php?action=smg_site_suite_clear_activity_log'),'smg_site_suite_clear_activity_log');
+        echo '<p><a class="button" href="'.esc_url($clear).'" onclick="return confirm(''.esc_js(__('Clear the activity log?','smg-site-suite')).'')">'.esc_html__('Clear Log','smg-site-suite').'</a></p>';
+        echo '<table class="widefat striped"><thead><tr><th>'.esc_html__('Time','smg-site-suite').'</th><th>'.esc_html__('Type','smg-site-suite').'</th><th>'.esc_html__('User','smg-site-suite').'</th><th>'.esc_html__('Activity','smg-site-suite').'</th></tr></thead><tbody>';
         foreach(array_reverse($log) as $row){
             $user=get_userdata((int)($row['user']??0));
             echo '<tr><td>'.esc_html(wp_date('Y-m-d H:i',(int)$row['time'])).'</td><td>'.esc_html((string)$row['type']).'</td><td>'.esc_html($user?$user->user_login:'—').'</td><td>'.esc_html((string)$row['message']).'</td></tr>';
         }
         echo '</tbody></table></div>';
+    }
+
+    public function clear():void{
+        if(!current_user_can('manage_options'))wp_die(esc_html__('Insufficient permissions.','smg-site-suite'));
+        check_admin_referer('smg_site_suite_clear_activity_log');
+        delete_option(self::OPTION);
+        wp_safe_redirect(add_query_arg('page','smg-site-suite-activity-log',admin_url('admin.php')));
+        exit;
     }
 }
