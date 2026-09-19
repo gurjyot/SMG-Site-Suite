@@ -86,6 +86,22 @@ jobs:
           wp eval-file "$GITHUB_WORKSPACE/tests/integration/performance-measure.php" > /tmp/smg-suite.json
           php "$GITHUB_WORKSPACE/tests/integration/compare-performance.php" /tmp/smg-baseline.json /tmp/smg-suite.json
 
+      - name: Measure frontend 0/10/50-module profiles
+        if: matrix.wordpress == '7.1.1'
+        run: |
+          cd /tmp/smg-wp
+          SMG_PROFILE_SIZE=0 wp eval-file wp-content/plugins/smg-site-suite/tests/integration/performance-profile-setup.php > /tmp/smg-profile-zero-selection.json
+          php "$GITHUB_WORKSPACE/tests/integration/frontend-performance-measure.php" /tmp/smg-wp > /tmp/smg-profile-zero.json
+          SMG_PROFILE_SIZE=10 wp eval-file wp-content/plugins/smg-site-suite/tests/integration/performance-profile-setup.php > /tmp/smg-profile-ten-selection.json
+          php "$GITHUB_WORKSPACE/tests/integration/frontend-performance-measure.php" /tmp/smg-wp > /tmp/smg-profile-ten.json
+          SMG_PROFILE_SIZE=50 wp eval-file wp-content/plugins/smg-site-suite/tests/integration/performance-profile-setup.php > /tmp/smg-profile-fifty-selection.json
+          php "$GITHUB_WORKSPACE/tests/integration/frontend-performance-measure.php" /tmp/smg-wp > /tmp/smg-profile-fifty.json
+          cat /tmp/smg-profile-zero-selection.json
+          cat /tmp/smg-profile-ten-selection.json
+          cat /tmp/smg-profile-fifty-selection.json
+          php "$GITHUB_WORKSPACE/tests/integration/compare-performance-profiles.php" /tmp/smg-profile-zero.json /tmp/smg-profile-ten.json /tmp/smg-profile-fifty.json
+          wp option update smg_site_suite_active_modules '[]' --format=json --quiet
+
       - name: Verify Store API server contracts
         run: |
           cd /tmp/smg-wp
