@@ -26,6 +26,23 @@ final class DataRegistryFactory {
             ->register('maintenance-mode','option','smg_site_suite_maintenance','configuration')
             ->register('head-body-footer-code','option','smg_site_suite_injected_code','configuration')
             ->register('email-sender-identity','option','smg_site_suite_email_sender','configuration')
-            ->register('login-logout-redirects','option','smg_site_suite_login_logout_redirects','configuration');
+            ->register('login-logout-redirects','option','smg_site_suite_login_logout_redirects','configuration')
+            ->register('catalog-mode','option','smg_site_suite_catalog_mode','configuration')
+            ->register('whatsapp-enquiry','option','smg_site_suite_whatsapp_enquiry','configuration')
+            ->register('quantity-rules','option','smg_site_suite_quantity_rules','configuration')
+            ->register('product-tabs-control','option','smg_site_suite_product_tabs','configuration')
+            ->register('auto-apply-coupon','option','smg_site_suite_auto_coupon','configuration')
+            ->register('thank-you-message','option','smg_site_suite_thankyou_message','configuration')
+            ->register('rename-payment-methods','option','smg_site_suite_payment_names','configuration')
+            ->register('rename-shipping-methods','option','smg_site_suite_shipping_names','configuration')
+            ->register('direct-checkout','option','smg_site_suite_direct_checkout','configuration')
+            ->register('checkout-field-controls','option','smg_site_suite_checkout_fields','configuration')
+            ->register('direct-checkout-links','option','smg_site_suite_direct_checkout_links','configuration')
+            ->register('url-coupons','option','smg_site_suite_url_coupons','configuration')
+            ->register('checkout-text-customizer','option','smg_site_suite_checkout_text','configuration')
+            ->register('woo-asset-control','option','smg_site_suite_woo_assets','configuration')
+            ->register('cart-fragments-control','option','smg_site_suite_cart_fragments','configuration')
+            ->register('my-account-redirects','option','smg_site_suite_account_redirects','configuration')
+            ->register('product-price-history','post_meta','_smg_site_suite_price_history','preserve');
     }
 }
