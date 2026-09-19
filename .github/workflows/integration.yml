@@ -60,6 +60,12 @@ jobs:
           wp plugin activate smg-site-suite
           wp plugin install "https://downloads.wordpress.org/plugin/woocommerce.${{ matrix.woocommerce }}.zip" --activate
 
+      - name: Verify inactive module isolation
+        run: |
+          cd /tmp/smg-wp
+          wp option update smg_site_suite_active_modules '[]' --format=json
+          wp eval-file wp-content/plugins/smg-site-suite/tests/integration/inactive-modules-smoke.php
+
       - name: Enable representative HPOS-safe modules
         run: |
           cd /tmp/smg-wp
