@@ -81,12 +81,20 @@ final class TemporaryLogin implements ModuleInterface {
             return;
         }
 
+        $headings = [
+            __('User', 'smg-site-suite'),
+            __('Email', 'smg-site-suite'),
+            __('Expires', 'smg-site-suite'),
+            __('Type', 'smg-site-suite'),
+            __('Action', 'smg-site-suite'),
+        ];
+
         echo '<h2>'.esc_html__('Active / Recent Temporary Access', 'smg-site-suite').'</h2>';
         echo '<table class="widefat striped" style="max-width:1000px">';
         echo '<thead><tr>';
 
-        foreach (['User', 'Email', 'Expires', 'Type', 'Action'] as $heading) {
-            echo '<th>'.esc_html__($heading, 'smg-site-suite').'</th>';
+        foreach ($headings as $heading) {
+            echo '<th>'.esc_html($heading).'</th>';
         }
 
         echo '</tr></thead><tbody>';
