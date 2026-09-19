@@ -102,7 +102,7 @@ Highlights include:
 
 ## Agentic interface
 
-On WordPress 6.9 and newer, Site Suite registers WordPress Abilities for module discovery, activation/deactivation, and settings management. The abilities reuse the existing ModuleManager and settings contracts, are available through the core Abilities REST API, and are marked for discovery by the official WordPress MCP Adapter.
+On WordPress 6.9 and newer, Site Suite registers WordPress Abilities for module discovery, activation/deactivation, settings management, system diagnostics, cron inspection, 404 inspection, and validated local redirect management. The abilities reuse existing Site Suite services, are available through the core Abilities REST API, and are marked for discovery by the official WordPress MCP Adapter.
 
 Protected Owner also applies to the agentic interface: when it is active, another administrator cannot operate Site Suite through an Ability.
 
