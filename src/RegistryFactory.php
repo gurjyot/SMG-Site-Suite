@@ -70,6 +70,15 @@ use SMG\SiteSuite\Modules\WooCommerce\DisableMarketplaceSuggestions;
 use SMG\SiteSuite\Modules\WooCommerce\CouponRoleRestrictions;
 use SMG\SiteSuite\Modules\WooCommerce\CouponMaximumDiscount;
 use SMG\SiteSuite\Modules\WooCommerce\CustomOrderStatuses;
+use SMG\SiteSuite\Modules\Security\SecurityHeaders;
+use SMG\SiteSuite\Modules\Utilities\RedirectManager;
+use SMG\SiteSuite\Modules\Utilities\NotFoundTracker;
+use SMG\SiteSuite\Modules\Admin\AdminMenuOrganizer;
+use SMG\SiteSuite\Modules\Media\SanitizeUploadFilenames;
+use SMG\SiteSuite\Modules\Users\TemporaryLogin;
+use SMG\SiteSuite\Modules\Admin\ActivityLogLite;
+use SMG\SiteSuite\Modules\Email\SmtpMailer;
+use SMG\SiteSuite\Modules\Email\MailLog;
 final class RegistryFactory {
     public static function make():ModuleRegistry{
         $r=(new ModuleRegistry())->addCategory('admin',__('Admin','smg-site-suite'))->addCategory('content',__('Content','smg-site-suite'))->addCategory('media',__('Media','smg-site-suite'))->addCategory('performance',__('Performance','smg-site-suite'))->addCategory('security',__('Security','smg-site-suite'))->addCategory('utilities',__('Utilities','smg-site-suite'))->addCategory('users',__('Users','smg-site-suite'))->addCategory('email',__('Email','smg-site-suite'))->addCategory('woocommerce',__('WooCommerce','smg-site-suite'));
@@ -150,6 +159,15 @@ final class RegistryFactory {
             ['coupon-role-restrictions','Coupon Role Restrictions','Restrict individual WooCommerce coupons to selected WordPress user roles.','woocommerce',CouponRoleRestrictions::class,['woocommerce','coupon','roles'],['all'],'medium',true,['plugins'=>['woocommerce/woocommerce.php']]],
             ['coupon-maximum-discount','Coupon Maximum Discount','Add an optional per-coupon maximum discount amount with a configurable default.','woocommerce',CouponMaximumDiscount::class,['woocommerce','coupon','maximum discount'],['all'],'medium',true,['plugins'=>['woocommerce/woocommerce.php']]],
             ['custom-order-statuses','Custom Order Statuses','Register lightweight custom WooCommerce order statuses from simple slug/label definitions.','woocommerce',CustomOrderStatuses::class,['woocommerce','orders','status'],['all'],'medium',true,['plugins'=>['woocommerce/woocommerce.php']]],
+            ['security-headers','Security Headers','Add conservative HTTP security headers without requiring server configuration changes.','security',SecurityHeaders::class,['security','headers','http'],['all'],'medium',true,[]],
+            ['redirect-manager','Redirect Manager','Create lightweight local 301 redirect rules from old paths to new paths.','utilities',RedirectManager::class,['redirects','seo','404'],['frontend'],'medium',true,[]],
+            ['404-tracker','404 Tracker','Keep a bounded local log of missing URLs, hit counts, last-seen time, and referrers.','utilities',NotFoundTracker::class,['404','seo','tracking'],['frontend','admin'],'low',true,[]],
+            ['admin-menu-organizer','Admin Menu Organizer','Hide selected top-level wp-admin menu items for administrators.','admin',AdminMenuOrganizer::class,['admin menu','organizer','cleanup'],['admin'],'low',true,[]],
+            ['sanitize-upload-filenames','Sanitize Upload Filenames','Normalize new upload filenames to lowercase ASCII kebab-case.','media',SanitizeUploadFilenames::class,['media','filenames','uploads'],['admin','ajax','rest'],'low',false,[]],
+            ['temporary-login','Temporary Login','Create one-use expiring administrator access links for support or development.','users',TemporaryLogin::class,['temporary login','support','access'],['all'],'high',false,[]],
+            ['activity-log-lite','Activity Log Lite','Keep a bounded local history of logins, plugin/theme changes, and content saves.','admin',ActivityLogLite::class,['activity','audit','log'],['all'],'medium',true,[]],
+            ['smtp-mailer','SMTP Mailer','Route WordPress mail through a configurable SMTP server.','email',SmtpMailer::class,['smtp','email','delivery'],['all'],'medium',true,[]],
+            ['mail-log','Mail Log','Keep a bounded local log of WordPress mail attempts and failures.','email',MailLog::class,['email','mail','log'],['all'],'medium',true,[]],
         ];
         foreach($defs as [$slug,$name,$description,$category,$class,$tags,$contexts,$risk,$settings,$dependencies]){
             $r->register(new ModuleDefinition(['slug'=>$slug,'name'=>__($name,'smg-site-suite'),'description'=>__($description,'smg-site-suite'),'category'=>$category,'class'=>$class,'tags'=>$tags,'contexts'=>$contexts,'risk'=>$risk,'has_settings'=>$settings,'dependencies'=>$dependencies]));
