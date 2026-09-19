@@ -22,6 +22,10 @@ final class DataRegistryFactory {
             ->register('fomo-sales-notifications','cron','smg_site_suite_fomo_refresh','generated')
             ->register('woocommerce-wishlist','option','smg_site_suite_wishlist_settings','configuration')
             ->register('woocommerce-wishlist','option','smg_site_suite_wishlist_page_id','configuration')
-            ->register('woocommerce-wishlist','user_meta','_smg_site_suite_wishlist','user_data');
+            ->register('woocommerce-wishlist','user_meta','_smg_site_suite_wishlist','user_data')
+            ->register('maintenance-mode','option','smg_site_suite_maintenance','configuration')
+            ->register('head-body-footer-code','option','smg_site_suite_injected_code','configuration')
+            ->register('email-sender-identity','option','smg_site_suite_email_sender','configuration')
+            ->register('login-logout-redirects','option','smg_site_suite_login_logout_redirects','configuration');
     }
 }
