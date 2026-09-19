@@ -37,8 +37,12 @@ final class ContentExpiration implements ModuleInterface {
         if(!isset($_POST['smg_site_suite_expiration_nonce'])||!wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['smg_site_suite_expiration_nonce'])),'smg_site_suite_expiration_'.$postId))return;
         if(!current_user_can('edit_post',$postId))return;
 
-        $existing=wp_next_scheduled(self::HOOK,[$postId,(string)get_post_meta($postId,self::META,true)]);
-        if($existing)wp_unschedule_event($existing,self::HOOK,[$postId,(string)get_post_meta($postId,self::META,true)]);
+        $previous=get_post_meta($postId,self::META,true);
+        $previousToken=is_array($previous)?(string)($previous['token']??''):'';
+        if($previousToken!==''){
+            $existing=wp_next_scheduled(self::HOOK,[$postId,$previousToken]);
+            if($existing)wp_unschedule_event($existing,self::HOOK,[$postId,$previousToken]);
+        }
 
         $date=sanitize_text_field((string)($_POST['smg_expiration_date']??''));
         $action=sanitize_key((string)($_POST['smg_expiration_action']??'draft'));
