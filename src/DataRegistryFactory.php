@@ -55,6 +55,7 @@ final class DataRegistryFactory {
             ->register('404-tracker','option','smg_site_suite_404_settings','configuration')
             ->register('admin-menu-organizer','option','smg_site_suite_admin_menu','configuration')
             ->register('temporary-login','user_meta','_smg_site_suite_temp_login','generated')
+            ->register('temporary-login','cron','smg_site_suite_temp_login_cleanup','generated')
             ->register('activity-log-lite','option','smg_site_suite_activity_log','generated')
             ->register('activity-log-lite','option','smg_site_suite_activity_log_settings','configuration')
             ->register('smtp-mailer','option','smg_site_suite_smtp','configuration')
