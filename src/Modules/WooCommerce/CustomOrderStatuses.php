@@ -26,7 +26,12 @@ final class CustomOrderStatuses implements SettingsModuleInterface {
                 'exclude_from_search'=>false,
                 'show_in_admin_all_list'=>true,
                 'show_in_admin_status_list'=>true,
-                'label_count'=>_n_noop($label.' <span class="count">(%s)</span>',$label.' <span class="count">(%s)</span>','smg-site-suite'),
+                'label_count'=>[
+                    'singular'=>$label.' <span class="count">(%s)</span>',
+                    'plural'=>$label.' <span class="count">(%s)</span>',
+                    'context'=>null,
+                    'domain'=>null,
+                ],
             ]);
         }
     }
