@@ -88,6 +88,9 @@ use SMG\SiteSuite\Modules\Users\DisableUserAccount;
 use SMG\SiteSuite\Modules\Users\HideAdminBarByRole;
 use SMG\SiteSuite\Modules\Media\ReplaceMedia;
 use SMG\SiteSuite\Modules\Users\MultipleUserRoles;
+use SMG\SiteSuite\Modules\Admin\EnvironmentIndicator;
+use SMG\SiteSuite\Modules\Admin\CronViewer;
+use SMG\SiteSuite\Modules\Admin\DatabaseTableSizes;
 final class RegistryFactory {
     public static function make():ModuleRegistry{
         $r=(new ModuleRegistry())->addCategory('admin',__('Admin','smg-site-suite'))->addCategory('content',__('Content','smg-site-suite'))->addCategory('media',__('Media','smg-site-suite'))->addCategory('performance',__('Performance','smg-site-suite'))->addCategory('security',__('Security','smg-site-suite'))->addCategory('utilities',__('Utilities','smg-site-suite'))->addCategory('users',__('Users','smg-site-suite'))->addCategory('email',__('Email','smg-site-suite'))->addCategory('woocommerce',__('WooCommerce','smg-site-suite'));
@@ -179,6 +182,9 @@ final class RegistryFactory {
             ['hide-admin-bar-by-role','Hide Admin Bar by Role','Hide the public WordPress admin bar for selected user roles.','users',HideAdminBarByRole::class,['users','roles','admin bar'],['frontend'],'low',true,[]],
             ['replace-media','Replace Media','Replace an attachment file while preserving its attachment ID and content references.','media',ReplaceMedia::class,['media','replace','attachment'],['admin'],'medium',false,[]],
             ['multiple-user-roles','Multiple User Roles','Assign more than one WordPress role to a user from the profile screen.','users',MultipleUserRoles::class,['users','roles','permissions'],['admin'],'medium',false,[]],
+            ['environment-indicator','Environment Indicator','Show a configurable environment label in the WordPress admin bar for production, staging, or development sites.','admin',EnvironmentIndicator::class,['environment','staging','admin bar'],['all'],'low',true,[]],
+            ['cron-viewer','Cron Viewer','Read-only view of scheduled WordPress cron events, hooks, schedules, and arguments.','admin',CronViewer::class,['cron','diagnostics','admin'],['admin'],'low',false,[]],
+            ['database-table-sizes','Database Table Sizes','Read-only database table size and row-count overview for diagnostics.','admin',DatabaseTableSizes::class,['database','diagnostics','storage'],['admin'],'low',false,[]],
             ['sanitize-upload-filenames','Sanitize Upload Filenames','Normalize new upload filenames to lowercase ASCII kebab-case.','media',SanitizeUploadFilenames::class,['media','filenames','uploads'],['admin','ajax','rest'],'low',false,[]],
             ['temporary-login','Temporary Login','Create one-use expiring administrator access links for support or development.','users',TemporaryLogin::class,['temporary login','support','access'],['all'],'high',false,[]],
             ['activity-log-lite','Activity Log Lite','Keep a bounded local history of logins, plugin/theme changes, and content saves.','admin',ActivityLogLite::class,['activity','audit','log'],['all'],'medium',true,[]],
