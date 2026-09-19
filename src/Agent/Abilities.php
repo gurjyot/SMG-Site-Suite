@@ -1,7 +1,11 @@
 <?php
 namespace SMG\SiteSuite\Agent;
 
+use SMG\SiteSuite\Modules\Admin\CronViewer;
 use SMG\SiteSuite\Modules\Admin\ProtectedOwner;
+use SMG\SiteSuite\Modules\Admin\SystemSummary;
+use SMG\SiteSuite\Modules\Utilities\NotFoundTracker;
+use SMG\SiteSuite\Modules\Utilities\RedirectManager;
 use SMG\WPFoundation\Modules\ModuleDefinition;
 use SMG\WPFoundation\Modules\ModuleManager;
 use Throwable;
@@ -176,6 +180,138 @@ final class Abilities {
                 'meta' => $this->meta(false, true, true),
             ]
         );
+
+        wp_register_ability(
+            'smg-site-suite/get-system-summary',
+            [
+                'label' => __('Get Site System Summary', 'smg-site-suite'),
+                'description' => __(
+                    'Returns structured WordPress, PHP, database, theme, URL, timezone, memory, multisite, and debug information.',
+                    'smg-site-suite'
+                ),
+                'category' => self::CATEGORY,
+                'input_schema' => $this->emptyInputSchema(),
+                'output_schema' => $this->systemSummarySchema(),
+                'execute_callback' => [$this, 'getSystemSummary'],
+                'permission_callback' => [$this, 'canManageSiteSuite'],
+                'meta' => $this->meta(true, false, true),
+            ]
+        );
+
+        wp_register_ability(
+            'smg-site-suite/list-cron-events',
+            [
+                'label' => __('List WordPress Cron Events', 'smg-site-suite'),
+                'description' => __(
+                    'Lists scheduled WordPress cron events from the active Cron Viewer module.',
+                    'smg-site-suite'
+                ),
+                'category' => self::CATEGORY,
+                'input_schema' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'limit' => [
+                            'type' => 'integer',
+                            'minimum' => 1,
+                            'maximum' => 500,
+                        ],
+                        'hook' => ['type' => 'string'],
+                    ],
+                    'additionalProperties' => false,
+                ],
+                'output_schema' => $this->cronListSchema(),
+                'execute_callback' => [$this, 'listCronEvents'],
+                'permission_callback' => [$this, 'canManageSiteSuite'],
+                'meta' => $this->meta(true, false, true),
+            ]
+        );
+
+        wp_register_ability(
+            'smg-site-suite/list-404s',
+            [
+                'label' => __('List Tracked 404s', 'smg-site-suite'),
+                'description' => __(
+                    'Lists recent tracked 404 requests from the active 404 Tracker module.',
+                    'smg-site-suite'
+                ),
+                'category' => self::CATEGORY,
+                'input_schema' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'limit' => [
+                            'type' => 'integer',
+                            'minimum' => 1,
+                            'maximum' => 500,
+                        ],
+                        'search' => ['type' => 'string'],
+                    ],
+                    'additionalProperties' => false,
+                ],
+                'output_schema' => $this->notFoundListSchema(),
+                'execute_callback' => [$this, 'listNotFoundEntries'],
+                'permission_callback' => [$this, 'canManageSiteSuite'],
+                'meta' => $this->meta(true, false, true),
+            ]
+        );
+
+        wp_register_ability(
+            'smg-site-suite/list-redirects',
+            [
+                'label' => __('List Redirect Rules', 'smg-site-suite'),
+                'description' => __(
+                    'Lists local redirect rules and usage statistics from the active Redirect Manager module.',
+                    'smg-site-suite'
+                ),
+                'category' => self::CATEGORY,
+                'input_schema' => $this->emptyInputSchema(),
+                'output_schema' => $this->redirectListSchema(),
+                'execute_callback' => [$this, 'listRedirects'],
+                'permission_callback' => [$this, 'canManageSiteSuite'],
+                'meta' => $this->meta(true, false, true),
+            ]
+        );
+
+        wp_register_ability(
+            'smg-site-suite/upsert-redirect',
+            [
+                'label' => __('Create or Update Redirect', 'smg-site-suite'),
+                'description' => __(
+                    'Creates or replaces one local redirect rule through the active Redirect Manager module.',
+                    'smg-site-suite'
+                ),
+                'category' => self::CATEGORY,
+                'input_schema' => $this->redirectInputSchema(true),
+                'output_schema' => $this->redirectRuleSchema(),
+                'execute_callback' => [$this, 'upsertRedirect'],
+                'permission_callback' => [$this, 'canManageSiteSuite'],
+                'meta' => $this->meta(false, true, true),
+            ]
+        );
+
+        wp_register_ability(
+            'smg-site-suite/delete-redirect',
+            [
+                'label' => __('Delete Redirect', 'smg-site-suite'),
+                'description' => __(
+                    'Deletes one local redirect rule through the active Redirect Manager module.',
+                    'smg-site-suite'
+                ),
+                'category' => self::CATEGORY,
+                'input_schema' => $this->redirectInputSchema(false),
+                'output_schema' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'from' => ['type' => 'string'],
+                        'deleted' => ['type' => 'boolean'],
+                    ],
+                    'required' => ['from', 'deleted'],
+                    'additionalProperties' => false,
+                ],
+                'execute_callback' => [$this, 'deleteRedirect'],
+                'permission_callback' => [$this, 'canManageSiteSuite'],
+                'meta' => $this->meta(false, true, true),
+            ]
+        );
     }
 
     public function canManageSiteSuite(): bool {
@@ -315,6 +451,164 @@ final class Abilities {
         ];
     }
 
+    public function getSystemSummary() {
+        $active = $this->requireActiveModule('system-summary');
+        if (is_wp_error($active)) {
+            return $active;
+        }
+
+        return (new SystemSummary())->summary();
+    }
+
+    public function listCronEvents($input = null) {
+        $active = $this->requireActiveModule('cron-viewer');
+        if (is_wp_error($active)) {
+            return $active;
+        }
+
+        $input = is_array($input) ? $input : [];
+        $limit = isset($input['limit']) ? absint($input['limit']) : 100;
+        $limit = max(1, min(500, $limit));
+        $hook = isset($input['hook'])
+            ? sanitize_text_field((string) $input['hook'])
+            : '';
+
+        $events = (new CronViewer())->events(500);
+        if ($hook !== '') {
+            $events = array_values(array_filter(
+                $events,
+                static fn(array $event): bool =>
+                    stripos((string) ($event['hook'] ?? ''), $hook) !== false
+            ));
+        }
+
+        $events = array_slice($events, 0, $limit);
+
+        return [
+            'count' => count($events),
+            'events' => $events,
+        ];
+    }
+
+    public function listNotFoundEntries($input = null) {
+        $active = $this->requireActiveModule('404-tracker');
+        if (is_wp_error($active)) {
+            return $active;
+        }
+
+        $input = is_array($input) ? $input : [];
+        $limit = isset($input['limit']) ? absint($input['limit']) : 100;
+        $limit = max(1, min(500, $limit));
+        $search = isset($input['search'])
+            ? sanitize_text_field((string) $input['search'])
+            : '';
+
+        $entries = (new NotFoundTracker())->entries(500);
+        if ($search !== '') {
+            $entries = array_values(array_filter(
+                $entries,
+                static function (array $entry) use ($search): bool {
+                    $haystack = implode(' ', [
+                        (string) ($entry['url'] ?? ''),
+                        (string) ($entry['path'] ?? ''),
+                        (string) ($entry['referrer'] ?? ''),
+                    ]);
+                    return stripos($haystack, $search) !== false;
+                }
+            ));
+        }
+
+        $entries = array_slice($entries, 0, $limit);
+
+        return [
+            'count' => count($entries),
+            'entries' => $entries,
+        ];
+    }
+
+    public function listRedirects() {
+        $active = $this->requireActiveModule('redirect-manager');
+        if (is_wp_error($active)) {
+            return $active;
+        }
+
+        $rules = (new RedirectManager())->rulesWithStats();
+
+        return [
+            'count' => count($rules),
+            'rules' => $rules,
+        ];
+    }
+
+    public function upsertRedirect(array $input) {
+        $active = $this->requireActiveModule('redirect-manager');
+        if (is_wp_error($active)) {
+            return $active;
+        }
+
+        return (new RedirectManager())->upsertRule(
+            (string) ($input['from'] ?? ''),
+            (string) ($input['to'] ?? ''),
+            isset($input['code']) ? absint($input['code']) : 301
+        );
+    }
+
+    public function deleteRedirect(array $input) {
+        $active = $this->requireActiveModule('redirect-manager');
+        if (is_wp_error($active)) {
+            return $active;
+        }
+
+        $from = sanitize_text_field((string) ($input['from'] ?? ''));
+        $result = (new RedirectManager())->deleteRule($from);
+
+        if (is_wp_error($result)) {
+            if ($result->get_error_code() === 'smg_site_suite_redirect_not_found') {
+                return [
+                    'from' => $from,
+                    'deleted' => false,
+                ];
+            }
+            return $result;
+        }
+
+        return [
+            'from' => $from,
+            'deleted' => true,
+        ];
+    }
+
+    private function requireActiveModule(string $slug) {
+        $status = $this->manager->status($slug);
+
+        if (!$status['known']) {
+            return new WP_Error(
+                'smg_site_suite_unknown_module',
+                __('Required Site Suite module is not registered.', 'smg-site-suite')
+            );
+        }
+
+        if (!$status['active']) {
+            return new WP_Error(
+                'smg_site_suite_module_inactive',
+                sprintf(
+                    /* translators: %s: Site Suite module slug. */
+                    __('The %s module must be active before using this ability.', 'smg-site-suite'),
+                    $slug
+                )
+            );
+        }
+
+        if (!$status['available']) {
+            return new WP_Error(
+                'smg_site_suite_module_unavailable',
+                __('The required Site Suite module has missing dependencies.', 'smg-site-suite')
+            );
+        }
+
+        return true;
+    }
+
     private function definitionFromInput(array $input) {
         $slug = isset($input['slug']) ? sanitize_key((string) $input['slug']) : '';
         $definition = $this->manager->registry()->get($slug);
@@ -359,6 +653,165 @@ final class Abilities {
         );
 
         return stripos($haystack, $search) !== false;
+    }
+
+    private function emptyInputSchema(): array {
+        return [
+            'type' => 'object',
+            'additionalProperties' => false,
+        ];
+    }
+
+    private function systemSummarySchema(): array {
+        return [
+            'type' => 'object',
+            'properties' => [
+                'wordpress_version' => ['type' => 'string'],
+                'php_version' => ['type' => 'string'],
+                'database_version' => ['type' => 'string'],
+                'theme_name' => ['type' => 'string'],
+                'theme_version' => ['type' => 'string'],
+                'site_url' => ['type' => 'string'],
+                'home_url' => ['type' => 'string'],
+                'timezone' => ['type' => 'string'],
+                'memory_limit' => ['type' => 'string'],
+                'multisite' => ['type' => 'boolean'],
+                'debug' => ['type' => 'boolean'],
+            ],
+            'required' => [
+                'wordpress_version',
+                'php_version',
+                'database_version',
+                'theme_name',
+                'theme_version',
+                'site_url',
+                'home_url',
+                'timezone',
+                'memory_limit',
+                'multisite',
+                'debug',
+            ],
+            'additionalProperties' => false,
+        ];
+    }
+
+    private function cronListSchema(): array {
+        return [
+            'type' => 'object',
+            'properties' => [
+                'count' => ['type' => 'integer'],
+                'events' => [
+                    'type' => 'array',
+                    'items' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'timestamp' => ['type' => 'integer'],
+                            'next_run' => ['type' => 'string'],
+                            'hook' => ['type' => 'string'],
+                            'schedule' => ['type' => 'string'],
+                            'args' => ['type' => 'array'],
+                        ],
+                        'required' => ['timestamp', 'next_run', 'hook', 'schedule', 'args'],
+                        'additionalProperties' => false,
+                    ],
+                ],
+            ],
+            'required' => ['count', 'events'],
+            'additionalProperties' => false,
+        ];
+    }
+
+    private function notFoundListSchema(): array {
+        return [
+            'type' => 'object',
+            'properties' => [
+                'count' => ['type' => 'integer'],
+                'entries' => [
+                    'type' => 'array',
+                    'items' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'url' => ['type' => 'string'],
+                            'path' => ['type' => 'string'],
+                            'hits' => ['type' => 'integer'],
+                            'last_seen' => ['type' => 'integer'],
+                            'last_seen_iso' => ['type' => 'string'],
+                            'referrer' => ['type' => 'string'],
+                        ],
+                        'required' => [
+                            'url',
+                            'path',
+                            'hits',
+                            'last_seen',
+                            'last_seen_iso',
+                            'referrer',
+                        ],
+                        'additionalProperties' => false,
+                    ],
+                ],
+            ],
+            'required' => ['count', 'entries'],
+            'additionalProperties' => false,
+        ];
+    }
+
+    private function redirectInputSchema(bool $includeTarget): array {
+        $properties = [
+            'from' => ['type' => 'string'],
+        ];
+        $required = ['from'];
+
+        if ($includeTarget) {
+            $properties['to'] = ['type' => 'string'];
+            $properties['code'] = [
+                'type' => 'integer',
+                'enum' => [301, 302, 307, 308],
+            ];
+            $required[] = 'to';
+        }
+
+        return [
+            'type' => 'object',
+            'properties' => $properties,
+            'required' => $required,
+            'additionalProperties' => false,
+        ];
+    }
+
+    private function redirectRuleSchema(): array {
+        return [
+            'type' => 'object',
+            'properties' => [
+                'from' => ['type' => 'string'],
+                'to' => ['type' => 'string'],
+                'code' => ['type' => 'integer'],
+            ],
+            'required' => ['from', 'to', 'code'],
+            'additionalProperties' => false,
+        ];
+    }
+
+    private function redirectListSchema(): array {
+        $rule = $this->redirectRuleSchema();
+        $rule['properties']['hits'] = ['type' => 'integer'];
+        $rule['properties']['last_used'] = ['type' => 'integer'];
+        $rule['properties']['last_used_iso'] = ['type' => 'string'];
+        $rule['required'][] = 'hits';
+        $rule['required'][] = 'last_used';
+        $rule['required'][] = 'last_used_iso';
+
+        return [
+            'type' => 'object',
+            'properties' => [
+                'count' => ['type' => 'integer'],
+                'rules' => [
+                    'type' => 'array',
+                    'items' => $rule,
+                ],
+            ],
+            'required' => ['count', 'rules'],
+            'additionalProperties' => false,
+        ];
     }
 
     private function slugInputSchema(): array {
