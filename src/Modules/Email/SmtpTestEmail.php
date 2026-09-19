@@ -29,7 +29,7 @@ final class SmtpTestEmail implements ModuleInterface {
     public function send():void{
         if(!current_user_can('manage_options'))wp_die(esc_html__('Insufficient permissions.','smg-site-suite'));
         check_admin_referer('smg_site_suite_send_test_email');
-        $email=sanitize_email((string)($_POST['email']??''));
+        $email=isset($_POST['email'])?sanitize_email(wp_unslash($_POST['email'])):'';
         if($email==='')wp_die(esc_html__('A valid email address is required.','smg-site-suite'));
         $sent=wp_mail($email,__('SMG Site Suite test email','smg-site-suite'),__('If you received this message, WordPress mail delivery is working.','smg-site-suite'));
         wp_safe_redirect(add_query_arg(['page'=>'smg-site-suite-test-email',$sent?'sent':'failed'=>'1'],admin_url('admin.php')));

@@ -47,6 +47,7 @@ final class PluginThemeNotes implements ModuleInterface {
     public function save():void{
         if(!current_user_can('manage_options'))wp_die(esc_html__('Insufficient permissions.','smg-site-suite'));
         check_admin_referer('smg_site_suite_save_component_notes');
+        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Each submitted note is sanitized below and keys are validated before use.
         $submitted=isset($_POST['notes'])&&is_array($_POST['notes'])?wp_unslash($_POST['notes']):[];
         $notes=[];
         foreach($submitted as $encoded=>$note){

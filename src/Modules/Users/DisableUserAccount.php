@@ -29,10 +29,18 @@ final class DisableUserAccount implements ModuleInterface {
     public function field(\WP_User $user):void{
         if(!current_user_can('edit_users'))return;
         if(class_exists('SMG\\SiteSuite\\Modules\\Admin\\ProtectedOwner') && \SMG\SiteSuite\Modules\Admin\ProtectedOwner::isProtectedUser($user->ID))return;
+        wp_nonce_field('smg_site_suite_disable_user_'.$user->ID,'smg_site_suite_disable_user_nonce');
         echo '<h2>'.esc_html__('Account Access','smg-site-suite').'</h2><table class="form-table"><tr><th>'.esc_html__('Disable account','smg-site-suite').'</th><td><label><input type="checkbox" name="smg_account_disabled" value="1" '.checked((bool)get_user_meta($user->ID,self::META,true),true,false).'> '.esc_html__('Prevent this user from logging in without deleting the account.','smg-site-suite').'</label></td></tr></table>';
     }
 
     public function save(int $userId):void{
+        if(
+            !isset($_POST['smg_site_suite_disable_user_nonce'])
+            || !wp_verify_nonce(
+                sanitize_text_field(wp_unslash($_POST['smg_site_suite_disable_user_nonce'])),
+                'smg_site_suite_disable_user_'.$userId
+            )
+        )return;
         if(!current_user_can('edit_user',$userId))return;
         if(class_exists('SMG\\SiteSuite\\Modules\\Admin\\ProtectedOwner') && \SMG\SiteSuite\Modules\Admin\ProtectedOwner::isProtectedUser($userId))return;
         if(!empty($_POST['smg_account_disabled']))update_user_meta($userId,self::META,1);else delete_user_meta($userId,self::META);

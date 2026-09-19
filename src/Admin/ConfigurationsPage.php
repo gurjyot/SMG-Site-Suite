@@ -124,9 +124,12 @@ final class ConfigurationsPage {
     public function import():void{
         $this->authorize();
         check_admin_referer('smg_site_suite_import_config');
-        if(empty($_FILES['config_file']['tmp_name'])||!is_uploaded_file($_FILES['config_file']['tmp_name']))wp_die(esc_html__('No valid configuration file uploaded.','smg-site-suite'));
+        $tmpName=isset($_FILES['config_file']['tmp_name'])
+            ? sanitize_text_field(wp_unslash((string)$_FILES['config_file']['tmp_name']))
+            : '';
+        if($tmpName===''||!is_uploaded_file($tmpName))wp_die(esc_html__('No valid configuration file uploaded.','smg-site-suite'));
 
-        $raw=file_get_contents($_FILES['config_file']['tmp_name']);
+        $raw=file_get_contents($tmpName);
         $payload=is_string($raw)?json_decode($raw,true):null;
         if(!is_array($payload)||(int)($payload['schema']??0)!==1||($payload['product']??'')!=='smg-site-suite')wp_die(esc_html__('Invalid Site Suite configuration file.','smg-site-suite'));
 

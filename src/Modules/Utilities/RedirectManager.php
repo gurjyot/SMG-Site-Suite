@@ -25,7 +25,10 @@ final class RedirectManager implements SettingsModuleInterface {
 
     public function redirect():void{
         if(is_admin()||wp_doing_ajax()||wp_doing_cron())return;
-        $path=(string)wp_parse_url(home_url(add_query_arg([],$_SERVER['REQUEST_URI']??'/')),PHP_URL_PATH);
+        $requestUri=isset($_SERVER['REQUEST_URI'])
+            ? sanitize_text_field(wp_unslash($_SERVER['REQUEST_URI']))
+            : '/';
+        $path=(string)wp_parse_url(home_url(add_query_arg([],$requestUri)),PHP_URL_PATH);
         foreach($this->rules() as $from=>$rule){
             if(untrailingslashit($path)!==untrailingslashit($from))continue;
             $this->recordHit($from);

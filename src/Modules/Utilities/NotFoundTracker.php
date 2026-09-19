@@ -22,7 +22,10 @@ final class NotFoundTracker implements SettingsModuleInterface {
 
     public function track():void{
         if(!is_404()||is_admin()||wp_doing_ajax())return;
-        $url=esc_url_raw(home_url(wp_unslash($_SERVER['REQUEST_URI']??'/')));
+        $requestUri=isset($_SERVER['REQUEST_URI'])
+            ? sanitize_text_field(wp_unslash($_SERVER['REQUEST_URI']))
+            : '/';
+        $url=esc_url_raw(home_url($requestUri));
         $referer=$this->requestReferer();
         $log=get_option(self::OPTION,[]);if(!is_array($log))$log=[];
         $key=md5($url);
@@ -36,9 +39,8 @@ final class NotFoundTracker implements SettingsModuleInterface {
     }
 
     private function requestReferer():string{
-        $value=$_SERVER['HTTP_REFERER']??'';
-        if(!is_string($value)||$value==='')return '';
-        return esc_url_raw(wp_unslash($value));
+        if(!isset($_SERVER['HTTP_REFERER'])||!is_string($_SERVER['HTTP_REFERER']))return '';
+        return esc_url_raw(wp_unslash($_SERVER['HTTP_REFERER']));
     }
 
     public function createRedirect():void{

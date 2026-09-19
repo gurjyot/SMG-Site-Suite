@@ -10,6 +10,22 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  standards:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+          tools: composer:v2
+      - name: Validate Composer metadata
+        run: composer validate --strict
+      - name: Install code-quality tools
+        run: composer install --no-interaction --prefer-dist
+      - name: WordPress coding standards
+        run: composer phpcs
+
   syntax-and-smoke:
     runs-on: ubuntu-latest
     strategy:

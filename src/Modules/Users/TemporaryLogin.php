@@ -53,8 +53,8 @@ final class TemporaryLogin implements ModuleInterface {
         if(!current_user_can('create_users'))wp_die(esc_html__('Insufficient permissions.','smg-site-suite'));
         check_admin_referer('smg_site_suite_create_temp_login');
 
-        $email=sanitize_email((string)($_POST['email']??''));
-        $hours=max(1,min(168,absint($_POST['hours']??24)));
+        $email=isset($_POST['email'])?sanitize_email(wp_unslash($_POST['email'])):'';
+        $hours=isset($_POST['hours'])?max(1,min(168,absint(wp_unslash($_POST['hours'])))):24;
         if($email==='')wp_die(esc_html__('Valid email required.','smg-site-suite'));
 
         $user=get_user_by('email',$email);

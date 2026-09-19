@@ -32,7 +32,9 @@ final class InternalContentNotes implements ModuleInterface {
     public function save(int $postId):void{
         if(!isset($_POST['smg_site_suite_internal_note_nonce'])||!wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['smg_site_suite_internal_note_nonce'])),'smg_site_suite_internal_note_'.$postId))return;
         if(!current_user_can('edit_post',$postId))return;
-        $value=sanitize_textarea_field((string)($_POST['smg_internal_note']??''));
+        $value=isset($_POST['smg_internal_note'])
+            ? sanitize_textarea_field(wp_unslash($_POST['smg_internal_note']))
+            : '';
         if($value==='')delete_post_meta($postId,self::META);else update_post_meta($postId,self::META,$value);
     }
 
