@@ -19,7 +19,7 @@ foreach([[0,$zero],[10,$ten],[50,$fifty]] as [$expected,$profile]){
 if((int)$ten['module_files']<(int)$zero['module_files'])$fail[]='10-module profile loaded fewer module files than zero-module profile.';
 if((int)$fifty['module_files']<(int)$ten['module_files'])$fail[]='50-module profile loaded fewer module files than 10-module profile.';
 
-$delta=static fn(array $a,array $b,string $key):(int)=>((int)$b[$key])-((int)$a[$key]);
+$delta=static fn(array $a,array $b,string $key):int=>((int)$b[$key])-((int)$a[$key]);
 printf("Zero: queries=%d files=%d module_files=%d peak_memory=%d\n",$zero['queries'],$zero['included_files'],$zero['module_files'],$zero['peak_memory']);
 printf("10 modules: queries=%d (%+d) files=%d (%+d) module_files=%d peak_memory=%d (%+d)\n",
     $ten['queries'],$delta($zero,$ten,'queries'),$ten['included_files'],$delta($zero,$ten,'included_files'),$ten['module_files'],$ten['peak_memory'],$delta($zero,$ten,'peak_memory'));
