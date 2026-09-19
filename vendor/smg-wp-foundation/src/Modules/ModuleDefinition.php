@@ -24,10 +24,11 @@ final class ModuleDefinition {
                 || !is_string($definition[$required])
                 || trim($definition[$required]) === ''
             ) {
-                // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are internal diagnostics, not HTML output.
+                // phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are internal diagnostics, not HTML output.
                 throw new InvalidArgumentException(
                     'Missing or invalid module definition field: '.$required
                 );
+                // phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
             }
         }
 
