@@ -47,6 +47,7 @@ $abilityNames = [
     'smg-site-suite/get-site-inventory',
     'smg-site-suite/get-database-table-sizes',
     'smg-site-suite/list-rewrite-rules',
+    'smg-site-suite/get-site-health',
 ];
 
 foreach ($abilityNames as $name) {
@@ -81,6 +82,7 @@ $deleteRedirectAbility = wp_get_ability('smg-site-suite/delete-redirect');
 $siteInventoryAbility = wp_get_ability('smg-site-suite/get-site-inventory');
 $databaseSizesAbility = wp_get_ability('smg-site-suite/get-database-table-sizes');
 $rewriteRulesAbility = wp_get_ability('smg-site-suite/list-rewrite-rules');
+$siteHealthAbility = wp_get_ability('smg-site-suite/get-site-health');
 
 $originalActive = (array) get_option('smg_site_suite_active_modules', []);
 $originalDashboard = get_option('smg_site_suite_custom_dashboard', null);
@@ -177,6 +179,7 @@ try {
             'site-inventory-export',
             'database-table-sizes',
             'rewrite-rules-viewer',
+            'site-health-extensions',
         ] as $slug) {
             $activated = $activateAbility->execute(['slug' => $slug]);
             $assert(!is_wp_error($activated), "Could not activate operational module: {$slug}");
@@ -370,6 +373,26 @@ try {
             $assert(
                 ($rewriteRules['rules'][0]['pattern'] ?? '') === '^smg-agent-test/?$',
                 'Rewrite rules ability returned the wrong pattern.'
+            );
+        }
+    }
+
+    if ($siteHealthAbility instanceof WP_Ability) {
+        $health = $siteHealthAbility->execute([]);
+        $assert(!is_wp_error($health), 'Site health ability returned an error.');
+        if (is_array($health)) {
+            $assert(
+                ($health['count'] ?? 0) === 4,
+                'Site health ability did not return all four checks.'
+            );
+            $ids = array_values(array_map(
+                static fn(array $check): string => (string) ($check['id'] ?? ''),
+                (array) ($health['checks'] ?? [])
+            ));
+            sort($ids);
+            $assert(
+                $ids === ['cron', 'debug', 'https', 'search_visibility'],
+                'Site health ability returned an unexpected check set.'
             );
         }
     }
