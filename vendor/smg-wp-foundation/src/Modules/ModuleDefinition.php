@@ -24,6 +24,7 @@ final class ModuleDefinition {
                 || !is_string($definition[$required])
                 || trim($definition[$required]) === ''
             ) {
+                // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are internal diagnostics, not HTML output.
                 throw new InvalidArgumentException(
                     'Missing or invalid module definition field: '.$required
                 );
@@ -32,11 +33,13 @@ final class ModuleDefinition {
 
         $slug = strtolower(trim($definition['slug']));
         if (!preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/', $slug)) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are internal diagnostics, not HTML output.
             throw new InvalidArgumentException('Module slug must be lowercase kebab-case.');
         }
 
         $risk = strtolower((string)($definition['risk'] ?? 'low'));
         if (!in_array($risk, ['low', 'medium', 'high', 'destructive'], true)) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are internal diagnostics, not HTML output.
             throw new InvalidArgumentException('Unsupported module risk level.');
         }
 
