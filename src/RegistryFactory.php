@@ -29,6 +29,12 @@ use SMG\SiteSuite\Modules\Performance\CleanWpHead;
 use SMG\SiteSuite\Modules\Security\DisableXmlRpc;
 use SMG\SiteSuite\Modules\Security\DisableApplicationPasswords;
 use SMG\SiteSuite\Modules\WooCommerce\OrderPhoneColumn;
+use SMG\SiteSuite\Modules\Performance\DisableFeeds;
+use SMG\SiteSuite\Modules\Security\DisableAuthorArchives;
+use SMG\SiteSuite\Modules\Content\ExternalLinksNewTab;
+use SMG\SiteSuite\Modules\Utilities\CustomExcerptLength;
+use SMG\SiteSuite\Modules\Content\CustomFrontendCss;
+use SMG\SiteSuite\Modules\Admin\CustomAdminCss;
 final class RegistryFactory {
     public static function make():ModuleRegistry{
         $r=(new ModuleRegistry())->addCategory('admin',__('Admin','smg-site-suite'))->addCategory('content',__('Content','smg-site-suite'))->addCategory('media',__('Media','smg-site-suite'))->addCategory('performance',__('Performance','smg-site-suite'))->addCategory('security',__('Security','smg-site-suite'))->addCategory('utilities',__('Utilities','smg-site-suite'))->addCategory('users',__('Users','smg-site-suite'))->addCategory('woocommerce',__('WooCommerce','smg-site-suite'));
@@ -48,6 +54,12 @@ final class RegistryFactory {
             ['disable-xml-rpc','Disable XML-RPC','Disable XML-RPC and remove pingback discovery headers.','security',DisableXmlRpc::class,['xmlrpc','pingback','security'],['all'],'low',false,[]],
             ['disable-application-passwords','Disable Application Passwords','Disable WordPress Application Password authentication when it is not needed.','security',DisableApplicationPasswords::class,['application passwords','security','auth'],['all'],'low',false,[]],
             ['clean-wp-head','Clean WordPress Head','Remove legacy RSD, WLW, shortlink, and adjacent-post discovery tags.','performance',CleanWpHead::class,['head','cleanup','performance'],['frontend'],'low',false,[]],
+            ['disable-feeds','Disable Feeds','Disable WordPress RSS/Atom feeds and remove feed discovery links.','performance',DisableFeeds::class,['feeds','rss','performance'],['all'],'low',false,[]],
+            ['disable-author-archives','Disable Author Archives','Redirect author archive URLs to the homepage and remove author archive links.','security',DisableAuthorArchives::class,['authors','security','archives'],['frontend'],'medium',false,[]],
+            ['external-links-new-tab','External Links in New Tab','Open external HTTP/HTTPS links in a new tab with noopener protection.','content',ExternalLinksNewTab::class,['external links','content','new tab'],['frontend'],'low',false,[]],
+            ['custom-excerpt-length','Custom Excerpt Length','Control the word length of automatically generated WordPress excerpts.','utilities',CustomExcerptLength::class,['excerpt','content','length'],['all'],'low',true,[]],
+            ['custom-frontend-css','Custom Frontend CSS','Add lightweight custom CSS to the public site without editing theme files.','content',CustomFrontendCss::class,['css','frontend','design'],['frontend'],'medium',true,[]],
+            ['custom-admin-css','Custom Admin CSS','Add lightweight custom CSS to wp-admin without editing plugin or theme files.','admin',CustomAdminCss::class,['css','admin','design'],['admin'],'medium',true,[]],
             ['disable-dashicons-frontend','Disable Dashicons for Guests','Stop loading Dashicons on the public frontend for logged-out visitors.','performance',DisableDashiconsFrontend::class,['dashicons','performance','assets'],['frontend'],'low',false,[]],
             ['disable-file-editing','Disable Theme / Plugin File Editors','Remove access to the built-in WordPress theme and plugin code editors.','security',DisableFileEditing::class,['file editor','security','admin'],['admin'],'low',false,[]],
             ['show-ids','Show IDs','Add ID columns to WordPress post type and taxonomy list tables.','admin',ShowIds::class,['ids','admin','columns'],['admin'],'low',false,[]],
