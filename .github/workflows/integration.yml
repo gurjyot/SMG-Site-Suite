@@ -86,6 +86,19 @@ jobs:
           wp eval-file "$GITHUB_WORKSPACE/tests/integration/performance-measure.php" > /tmp/smg-suite.json
           php "$GITHUB_WORKSPACE/tests/integration/compare-performance.php" /tmp/smg-baseline.json /tmp/smg-suite.json
 
+      - name: Record representative 10-module performance profile
+        if: matrix.wordpress == '7.1.1'
+        run: |
+          cd /tmp/smg-wp
+          wp option update smg_site_suite_active_modules '["disable-comments","revision-control","heartbeat-control","disable-emojis","disable-embeds","clean-wp-head","disable-feeds","hide-wp-version","disable-xml-rpc","remove-recent-comments-css"]' --format=json --quiet
+          wp eval-file "$GITHUB_WORKSPACE/tests/integration/performance-measure.php" > /tmp/smg-10-modules.json
+          cat /tmp/smg-10-modules.json
+
+      - name: Verify frontend query bounds
+        run: |
+          cd /tmp/smg-wp
+          wp eval-file wp-content/plugins/smg-site-suite/tests/integration/frontend-query-bounds-smoke.php
+
       - name: Verify Store API server contracts
         run: |
           cd /tmp/smg-wp

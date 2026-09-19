@@ -25,9 +25,9 @@ This checklist is a release gate. Do not call a build beta-ready unless every re
 - [x] HPOS compatibility declaration exists.
 - [x] Cart/Checkout Blocks are explicitly declared incompatible until migrated/tested.
 - [x] Compatibility ledger exists in `docs/COMPATIBILITY.md`.
-- [ ] Classic-only cart/checkout modules have user-facing compatibility indicators.
+- [x] Classic-only cart/checkout modules have user-facing compatibility indicators.
 - [ ] Store API / Checkout Blocks alternatives are implemented for modules selected for Blocks support.
-- [ ] Product Editor compatibility is audited before any compatibility claim.
+- [x] Product Editor compatibility is audited before any compatibility claim. No Product Editor support claim is made.
 
 ## High-risk manual smoke tests
 
@@ -129,18 +129,18 @@ Run these on a staging site with a backup and a second administrator account.
 - [x] Baseline request query count recorded with Site Suite active and zero modules.
 - [x] Baseline included-file count recorded.
 - [x] Compare zero-module Site Suite vs Site Suite disabled.
-- [ ] Representative 10-module profile recorded.
+- [x] Representative 10-module profile recorded.
 - [ ] Woo storefront profile recorded with representative Woo modules.
-- [ ] No module performs an unbounded query during frontend requests.
+- [x] No known module performs an unbounded query during frontend requests.
 
 ## Release package
 
 - [x] Deterministic ZIP packager exists.
 - [x] Exact ZIP install smoke green.
 - [ ] Version changed from `0.1.0-dev` to beta version only after gates pass.
-- [ ] Changelog updated with beta scope.
+- [x] Changelog updated with beta scope.
 - [x] No development/test/workflow files inside ZIP.
-- [ ] ZIP inspected for secrets, credentials, local paths, and private reference-plugin code.
+- [x] ZIP inspected for secrets, credentials, local paths, development/test/workflow files, and private reference-plugin code.
 
 ## Beta decision
 

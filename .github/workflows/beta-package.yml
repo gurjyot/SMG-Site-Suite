@@ -44,6 +44,7 @@ jobs:
           chmod +x scripts/build-beta.sh
           scripts/build-beta.sh "$GITHUB_WORKSPACE/build"
           unzip -l build/smg-site-suite.zip
+          php tests/integration/package-audit.php build/smg-site-suite.zip
           test -f build/smg-site-suite.zip
 
       - name: Install clean WordPress
