@@ -17,7 +17,7 @@ final class ProtectedOwner implements ModuleInterface, ActivatableModuleInterfac
     public function register():void{
         add_filter('map_meta_cap',[$this,'protectCapabilities'],20,4);
         add_filter('user_row_actions',[$this,'rowActions'],20,2);
-        add_action('admin_menu',[$this,'adminMenu'],1);
+        add_action('admin_menu',[$this,'adminMenu'],999999);
         add_action('admin_init',[$this,'protectSiteSuitePages'],1);
         add_action('admin_post_smg_site_suite_save_protected_owners',[$this,'save']);
         add_filter('plugin_action_links_'.plugin_basename(SMG_SITE_SUITE_FILE),[$this,'pluginActions'],99);
