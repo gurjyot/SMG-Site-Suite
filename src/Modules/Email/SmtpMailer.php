@@ -15,7 +15,7 @@ final class SmtpMailer implements SettingsModuleInterface {
             ['key'=>'port','type'=>'number','label'=>__('SMTP port','smg-site-suite'),'default'=>587],
             ['key'=>'encryption','type'=>'select','label'=>__('Encryption','smg-site-suite'),'default'=>'tls','options'=>['tls'=>'TLS','ssl'=>'SSL','none'=>__('None','smg-site-suite')]],
             ['key'=>'username','type'=>'text','label'=>__('Username','smg-site-suite'),'default'=>''],
-            ['key'=>'password','type'=>'text','label'=>__('Password','smg-site-suite'),'default'=>''],
+            ['key'=>'password','type'=>'password','label'=>__('Password','smg-site-suite'),'default'=>''],
             ['key'=>'auth','type'=>'checkbox','label'=>__('Use SMTP authentication','smg-site-suite'),'default'=>true],
         ];
     }
