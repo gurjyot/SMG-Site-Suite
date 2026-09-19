@@ -109,6 +109,15 @@ use SMG\SiteSuite\Modules\Content\InternalContentNotes;
 use SMG\SiteSuite\Modules\Content\RequireFeaturedImage;
 use SMG\SiteSuite\Modules\Admin\ContentMetricsColumns;
 use SMG\SiteSuite\Modules\Media\UploadSizeLimit;
+use SMG\SiteSuite\Modules\Admin\PluginThemeNotes;
+use SMG\SiteSuite\Modules\Admin\CriticalPluginProtection;
+use SMG\SiteSuite\Modules\Admin\SiteHealthExtensions;
+use SMG\SiteSuite\Modules\WooCommerce\OrderNotesColumn;
+use SMG\SiteSuite\Modules\WooCommerce\ProductThumbnailColumn;
+use SMG\SiteSuite\Modules\WooCommerce\CustomerLifetimeOrders;
+use SMG\SiteSuite\Modules\WooCommerce\EstimatedDeliveryMessage;
+use SMG\SiteSuite\Modules\WooCommerce\CustomStockMessages;
+use SMG\SiteSuite\Modules\WooCommerce\CheckoutSuccessWhatsapp;
 final class RegistryFactory {
     public static function make():ModuleRegistry{
         $r=(new ModuleRegistry())->addCategory('admin',__('Admin','smg-site-suite'))->addCategory('content',__('Content','smg-site-suite'))->addCategory('media',__('Media','smg-site-suite'))->addCategory('performance',__('Performance','smg-site-suite'))->addCategory('security',__('Security','smg-site-suite'))->addCategory('utilities',__('Utilities','smg-site-suite'))->addCategory('users',__('Users','smg-site-suite'))->addCategory('email',__('Email','smg-site-suite'))->addCategory('woocommerce',__('WooCommerce','smg-site-suite'));
@@ -220,6 +229,15 @@ final class RegistryFactory {
             ['require-featured-image','Require Featured Image','Prevent selected post types from publishing without a featured image.','content',RequireFeaturedImage::class,['featured image','editorial','publish'],['admin'],'medium',true,[]],
             ['content-metrics-columns','Content Metrics Columns','Show word count and last-modified time in editable content list tables.','admin',ContentMetricsColumns::class,['content','columns','word count'],['admin'],'low',false,[]],
             ['upload-size-limit','Upload Size Limit','Apply an optional Site Suite maximum upload size below the server limit.','media',UploadSizeLimit::class,['media','upload','limit'],['admin','ajax','rest'],'low',true,[]],
+            ['plugin-theme-notes','Plugin & Theme Notes','Store private agency notes explaining installed plugins, themes, dependencies, and update cautions.','admin',PluginThemeNotes::class,['plugins','themes','notes','agency'],['admin'],'low',false,[]],
+            ['critical-plugin-protection','Critical Plugin Protection','Protect selected plugins from ordinary administrator deactivation and automatic updates.','admin',CriticalPluginProtection::class,['plugins','protection','updates'],['admin'],'high',true,[]],
+            ['site-health-extensions','Site Health Extensions','Add Site Suite checks for HTTPS, debug mode, search visibility, and WP-Cron to WordPress Site Health.','admin',SiteHealthExtensions::class,['site health','diagnostics','security'],['admin'],'low',false,[]],
+            ['woo-order-notes-column','Woo Order Notes Column','Show the latest WooCommerce order note in legacy and HPOS order list tables.','woocommerce',OrderNotesColumn::class,['woocommerce','orders','notes','hpos'],['admin'],'low',false,['plugins'=>['woocommerce/woocommerce.php']]],
+            ['woo-product-thumbnail-column','Woo Product Thumbnail Column','Ensure product thumbnails are visible in the WooCommerce product list.','woocommerce',ProductThumbnailColumn::class,['woocommerce','products','thumbnail'],['admin'],'low',false,['plugins'=>['woocommerce/woocommerce.php']]],
+            ['woo-customer-lifetime-orders','Woo Customer Lifetime Orders','Show WooCommerce order count and lifetime spend in the WordPress Users list.','woocommerce',CustomerLifetimeOrders::class,['woocommerce','customers','orders','lifetime'],['admin'],'low',false,['plugins'=>['woocommerce/woocommerce.php']]],
+            ['estimated-delivery-message','Estimated Delivery Message','Show a configurable delivery-time message on WooCommerce product pages.','woocommerce',EstimatedDeliveryMessage::class,['woocommerce','delivery','product'],['frontend'],'low',true,['plugins'=>['woocommerce/woocommerce.php']]],
+            ['custom-stock-messages','Custom Stock Messages','Customize in-stock, low-stock, and out-of-stock WooCommerce availability messages.','woocommerce',CustomStockMessages::class,['woocommerce','stock','inventory'],['frontend'],'low',true,['plugins'=>['woocommerce/woocommerce.php']]],
+            ['checkout-success-whatsapp','Checkout Success WhatsApp','Show an order-aware WhatsApp button on the WooCommerce thank-you page.','woocommerce',CheckoutSuccessWhatsapp::class,['woocommerce','whatsapp','checkout','order'],['frontend'],'low',true,['plugins'=>['woocommerce/woocommerce.php']]],
             ['auto-update-email-controls','Auto-Update Email Controls','Optionally suppress WordPress core, plugin, and theme automatic update notification emails.','email',AutoUpdateEmailControls::class,['email','updates','notifications'],['all'],'low',true,[]],
             ['sanitize-upload-filenames','Sanitize Upload Filenames','Normalize new upload filenames to lowercase ASCII kebab-case.','media',SanitizeUploadFilenames::class,['media','filenames','uploads'],['admin','ajax','rest'],'low',false,[]],
             ['temporary-login','Temporary Login','Create one-use expiring administrator access links for support or development.','users',TemporaryLogin::class,['temporary login','support','access'],['all'],'high',false,[]],
