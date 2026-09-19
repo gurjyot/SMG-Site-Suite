@@ -2,8 +2,11 @@
 namespace SMG\SiteSuite\Agent;
 
 use SMG\SiteSuite\Modules\Admin\CronViewer;
+use SMG\SiteSuite\Modules\Admin\DatabaseTableSizes;
 use SMG\SiteSuite\Modules\Admin\ProtectedOwner;
 use SMG\SiteSuite\Modules\Admin\SystemSummary;
+use SMG\SiteSuite\Modules\Admin\RewriteRulesViewer;
+use SMG\SiteSuite\Modules\Admin\SiteInventoryExport;
 use SMG\SiteSuite\Modules\Utilities\NotFoundTracker;
 use SMG\SiteSuite\Modules\Utilities\RedirectManager;
 use SMG\WPFoundation\Modules\ModuleDefinition;
@@ -312,6 +315,78 @@ final class Abilities {
                 'meta' => $this->meta(false, true, true),
             ]
         );
+
+        wp_register_ability(
+            'smg-site-suite/get-site-inventory',
+            [
+                'label' => __('Get Site Inventory', 'smg-site-suite'),
+                'description' => __(
+                    'Returns a structured inventory of the WordPress runtime, theme, installed plugins, and active Site Suite modules.',
+                    'smg-site-suite'
+                ),
+                'category' => self::CATEGORY,
+                'input_schema' => $this->emptyInputSchema(),
+                'output_schema' => $this->siteInventorySchema(),
+                'execute_callback' => [$this, 'getSiteInventory'],
+                'permission_callback' => [$this, 'canManageSiteSuite'],
+                'meta' => $this->meta(true, false, true),
+            ]
+        );
+
+        wp_register_ability(
+            'smg-site-suite/get-database-table-sizes',
+            [
+                'label' => __('Get Database Table Sizes', 'smg-site-suite'),
+                'description' => __(
+                    'Returns a bounded read-only overview of WordPress database table sizes.',
+                    'smg-site-suite'
+                ),
+                'category' => self::CATEGORY,
+                'input_schema' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'limit' => [
+                            'type' => 'integer',
+                            'minimum' => 1,
+                            'maximum' => 500,
+                        ],
+                    ],
+                    'additionalProperties' => false,
+                ],
+                'output_schema' => $this->databaseTableSizesSchema(),
+                'execute_callback' => [$this, 'getDatabaseTableSizes'],
+                'permission_callback' => [$this, 'canManageSiteSuite'],
+                'meta' => $this->meta(true, false, true),
+            ]
+        );
+
+        wp_register_ability(
+            'smg-site-suite/list-rewrite-rules',
+            [
+                'label' => __('List Rewrite Rules', 'smg-site-suite'),
+                'description' => __(
+                    'Returns a bounded read-only list of stored WordPress rewrite rules.',
+                    'smg-site-suite'
+                ),
+                'category' => self::CATEGORY,
+                'input_schema' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'limit' => [
+                            'type' => 'integer',
+                            'minimum' => 1,
+                            'maximum' => 1000,
+                        ],
+                        'search' => ['type' => 'string'],
+                    ],
+                    'additionalProperties' => false,
+                ],
+                'output_schema' => $this->rewriteRulesSchema(),
+                'execute_callback' => [$this, 'listRewriteRules'],
+                'permission_callback' => [$this, 'canManageSiteSuite'],
+                'meta' => $this->meta(true, false, true),
+            ]
+        );
     }
 
     public function canManageSiteSuite(): bool {
@@ -578,6 +653,42 @@ final class Abilities {
         ];
     }
 
+    public function getSiteInventory() {
+        $active = $this->requireActiveModule('site-inventory-export');
+        if (is_wp_error($active)) {
+            return $active;
+        }
+
+        return (new SiteInventoryExport())->inventory();
+    }
+
+    public function getDatabaseTableSizes($input = null) {
+        $active = $this->requireActiveModule('database-table-sizes');
+        if (is_wp_error($active)) {
+            return $active;
+        }
+
+        $input = is_array($input) ? $input : [];
+        $limit = isset($input['limit']) ? absint($input['limit']) : 100;
+
+        return (new DatabaseTableSizes())->tables($limit);
+    }
+
+    public function listRewriteRules($input = null) {
+        $active = $this->requireActiveModule('rewrite-rules-viewer');
+        if (is_wp_error($active)) {
+            return $active;
+        }
+
+        $input = is_array($input) ? $input : [];
+        $limit = isset($input['limit']) ? absint($input['limit']) : 100;
+        $search = isset($input['search'])
+            ? sanitize_text_field((string) $input['search'])
+            : '';
+
+        return (new RewriteRulesViewer())->rules($limit, $search);
+    }
+
     private function requireActiveModule(string $slug) {
         $status = $this->manager->status($slug);
 
@@ -810,6 +921,141 @@ final class Abilities {
                 ],
             ],
             'required' => ['count', 'rules'],
+            'additionalProperties' => false,
+        ];
+    }
+
+    private function siteInventorySchema(): array {
+        return [
+            'type' => 'object',
+            'properties' => [
+                'schema' => ['type' => 'integer'],
+                'generated_at' => ['type' => 'string'],
+                'site' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'home' => ['type' => 'string'],
+                        'site' => ['type' => 'string'],
+                        'multisite' => ['type' => 'boolean'],
+                        'timezone' => ['type' => 'string'],
+                    ],
+                    'required' => ['home', 'site', 'multisite', 'timezone'],
+                    'additionalProperties' => false,
+                ],
+                'runtime' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'wordpress' => ['type' => 'string'],
+                        'php' => ['type' => 'string'],
+                        'database' => ['type' => 'string'],
+                        'memory_limit' => ['type' => 'string'],
+                    ],
+                    'required' => ['wordpress', 'php', 'database', 'memory_limit'],
+                    'additionalProperties' => false,
+                ],
+                'theme' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'stylesheet' => ['type' => 'string'],
+                        'name' => ['type' => 'string'],
+                        'version' => ['type' => 'string'],
+                    ],
+                    'required' => ['stylesheet', 'name', 'version'],
+                    'additionalProperties' => false,
+                ],
+                'plugins' => [
+                    'type' => 'array',
+                    'items' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'file' => ['type' => 'string'],
+                            'name' => ['type' => 'string'],
+                            'version' => ['type' => 'string'],
+                            'active' => ['type' => 'boolean'],
+                        ],
+                        'required' => ['file', 'name', 'version', 'active'],
+                        'additionalProperties' => false,
+                    ],
+                ],
+                'site_suite' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'version' => ['type' => 'string'],
+                        'active_modules' => [
+                            'type' => 'array',
+                            'items' => ['type' => 'string'],
+                        ],
+                    ],
+                    'required' => ['version', 'active_modules'],
+                    'additionalProperties' => false,
+                ],
+            ],
+            'required' => [
+                'schema',
+                'generated_at',
+                'site',
+                'runtime',
+                'theme',
+                'plugins',
+                'site_suite',
+            ],
+            'additionalProperties' => false,
+        ];
+    }
+
+    private function databaseTableSizesSchema(): array {
+        return [
+            'type' => 'object',
+            'properties' => [
+                'count' => ['type' => 'integer'],
+                'total_bytes' => ['type' => 'integer'],
+                'tables' => [
+                    'type' => 'array',
+                    'items' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'name' => ['type' => 'string'],
+                            'rows' => ['type' => 'integer'],
+                            'data_bytes' => ['type' => 'integer'],
+                            'index_bytes' => ['type' => 'integer'],
+                            'total_bytes' => ['type' => 'integer'],
+                        ],
+                        'required' => [
+                            'name',
+                            'rows',
+                            'data_bytes',
+                            'index_bytes',
+                            'total_bytes',
+                        ],
+                        'additionalProperties' => false,
+                    ],
+                ],
+            ],
+            'required' => ['count', 'total_bytes', 'tables'],
+            'additionalProperties' => false,
+        ];
+    }
+
+    private function rewriteRulesSchema(): array {
+        return [
+            'type' => 'object',
+            'properties' => [
+                'stored_count' => ['type' => 'integer'],
+                'count' => ['type' => 'integer'],
+                'rules' => [
+                    'type' => 'array',
+                    'items' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'pattern' => ['type' => 'string'],
+                            'target' => ['type' => 'string'],
+                        ],
+                        'required' => ['pattern', 'target'],
+                        'additionalProperties' => false,
+                    ],
+                ],
+            ],
+            'required' => ['stored_count', 'count', 'rules'],
             'additionalProperties' => false,
         ];
     }
