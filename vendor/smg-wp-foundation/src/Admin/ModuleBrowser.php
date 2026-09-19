@@ -89,8 +89,12 @@ final class ModuleBrowser {
 
             if($module->hasSettings()){
                 $fallback=add_query_arg(['page'=>$this->config['menu_slug'],'module_settings'=>$module->slug()],admin_url('admin.php'));
-                echo '<button type="button" class="button button-small smg-foundation-settings-button" data-module="'.esc_attr($module->slug()).'" data-title="'.esc_attr($module->name()).'" '.disabled($active&&$available,false,false).'>'.esc_html__('Settings','smg-site-suite').'</button>';
-                echo '<noscript><a class="button button-small" href="'.esc_url($fallback).'">'.esc_html__('Settings','smg-site-suite').'</a></noscript>';
+                if($module->settingsMode()==='page'){
+                    echo '<a class="button button-small" href="'.esc_url($fallback).'">'.esc_html__('Settings','smg-site-suite').'</a>';
+                }else{
+                    echo '<button type="button" class="button button-small smg-foundation-settings-button" data-module="'.esc_attr($module->slug()).'" data-title="'.esc_attr($module->name()).'" '.disabled($active&&$available,false,false).'>'.esc_html__('Settings','smg-site-suite').'</button>';
+                    echo '<noscript><a class="button button-small" href="'.esc_url($fallback).'">'.esc_html__('Settings','smg-site-suite').'</a></noscript>';
+                }
             }
 
             echo '</div><label class="smg-foundation-switch"><input class="smg-foundation-toggle" type="checkbox" value="'.esc_attr($module->slug()).'" '.checked($active,true,false).' '.disabled($available,false,false).'><span></span></label></article>';
