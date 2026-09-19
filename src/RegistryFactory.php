@@ -14,6 +14,14 @@ use SMG\SiteSuite\Modules\WooCommerce\BuyNow;
 use SMG\SiteSuite\Modules\WooCommerce\CodRules;
 use SMG\SiteSuite\Modules\WooCommerce\ShippingProgressBar;
 use SMG\SiteSuite\Modules\WooCommerce\FomoSalesNotifications;
+use SMG\SiteSuite\Modules\Performance\DisableDashiconsFrontend;
+use SMG\SiteSuite\Modules\Security\DisableFileEditing;
+use SMG\SiteSuite\Modules\Admin\ShowIds;
+use SMG\SiteSuite\Modules\Admin\ActivePluginsFirst;
+use SMG\SiteSuite\Modules\Admin\FeaturedImageColumn;
+use SMG\SiteSuite\Modules\Admin\DisableAdminBarFrontend;
+use SMG\SiteSuite\Modules\Admin\HideAdminNotices;
+use SMG\SiteSuite\Modules\Admin\FooterTimezone;
 final class RegistryFactory {
     public static function make():ModuleRegistry{
         $r=(new ModuleRegistry())->addCategory('admin',__('Admin','smg-site-suite'))->addCategory('content',__('Content','smg-site-suite'))->addCategory('media',__('Media','smg-site-suite'))->addCategory('performance',__('Performance','smg-site-suite'))->addCategory('security',__('Security','smg-site-suite'))->addCategory('utilities',__('Utilities','smg-site-suite'))->addCategory('woocommerce',__('WooCommerce','smg-site-suite'));
@@ -33,6 +41,14 @@ final class RegistryFactory {
             ['disable-xml-rpc','Disable XML-RPC','Disable XML-RPC and remove pingback discovery headers.','security',DisableXmlRpc::class,['xmlrpc','pingback','security'],['all'],'low',false,[]],
             ['disable-application-passwords','Disable Application Passwords','Disable WordPress Application Password authentication when it is not needed.','security',DisableApplicationPasswords::class,['application passwords','security','auth'],['all'],'low',false,[]],
             ['clean-wp-head','Clean WordPress Head','Remove legacy RSD, WLW, shortlink, and adjacent-post discovery tags.','performance',CleanWpHead::class,['head','cleanup','performance'],['frontend'],'low',false,[]],
+            ['disable-dashicons-frontend','Disable Dashicons for Guests','Stop loading Dashicons on the public frontend for logged-out visitors.','performance',DisableDashiconsFrontend::class,['dashicons','performance','assets'],['frontend'],'low',false,[]],
+            ['disable-file-editing','Disable Theme / Plugin File Editors','Remove access to the built-in WordPress theme and plugin code editors.','security',DisableFileEditing::class,['file editor','security','admin'],['admin'],'low',false,[]],
+            ['show-ids','Show IDs','Add ID columns to WordPress post type and taxonomy list tables.','admin',ShowIds::class,['ids','admin','columns'],['admin'],'low',false,[]],
+            ['active-plugins-first','Active Plugins First','Sort active plugins to the top of the Plugins screen.','admin',ActivePluginsFirst::class,['plugins','admin','productivity'],['admin'],'low',false,[]],
+            ['featured-image-column','Featured Image Column','Show featured-image thumbnails in supported content list tables.','admin',FeaturedImageColumn::class,['featured image','admin','columns'],['admin'],'low',false,[]],
+            ['disable-admin-bar-frontend','Disable Frontend Admin Bar','Hide the WordPress admin toolbar on the public site while keeping wp-admin unchanged.','admin',DisableAdminBarFrontend::class,['admin bar','frontend'],['frontend'],'low',false,[]],
+            ['hide-admin-notices','Hide Admin Notices','Hide standard WordPress admin notices for administrators to reduce dashboard clutter.','admin',HideAdminNotices::class,['notices','admin','cleanup'],['admin'],'medium',false,[]],
+            ['footer-timezone','Footer Time & Timezone','Show the site-local date, time, and timezone in the WordPress admin footer.','admin',FooterTimezone::class,['timezone','footer','admin'],['admin'],'low',false,[]],
             ['disable-woo-reviews','Disable Product Reviews','Disable WooCommerce product reviews without affecting normal post comments.','woocommerce',DisableReviews::class,['woocommerce','reviews'],['all'],'low',false,['plugins'=>['woocommerce/woocommerce.php']]],
             ['payment-method-column','Payment Method Column','Show the payment method directly in WooCommerce order lists, including HPOS.','woocommerce',PaymentMethodColumn::class,['woocommerce','orders','hpos'],['admin'],'low',false,['plugins'=>['woocommerce/woocommerce.php']]],
             ['order-phone-column','Order Phone Column','Show the billing phone number directly in WooCommerce order lists, including HPOS.','woocommerce',OrderPhoneColumn::class,['woocommerce','orders','phone','hpos'],['admin'],'low',false,['plugins'=>['woocommerce/woocommerce.php']]],
