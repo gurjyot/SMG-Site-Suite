@@ -1,0 +1,56 @@
+name: plugin-check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  wordpress-plugin-check:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: wordpress
+          MYSQL_USER: wordpress
+          MYSQL_PASSWORD: wordpress
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+          tools: wp-cli
+
+      - name: Install WordPress
+        run: |
+          mkdir -p /tmp/smg-plugin-check
+          cd /tmp/smg-plugin-check
+          wp core download --version=7.1.1 --force
+          wp config create --dbname=wordpress --dbuser=wordpress --dbpass=wordpress --dbhost=127.0.0.1:3306 --skip-check
+          wp core install --url=http://smg.test --title="SMG Plugin Check" --admin_user=admin --admin_password=admin --admin_email=admin@example.test --skip-email
+
+      - name: Install Site Suite and Plugin Check
+        run: |
+          mkdir -p /tmp/smg-plugin-check/wp-content/plugins/smg-site-suite
+          rsync -a --exclude='.git' "$GITHUB_WORKSPACE/" /tmp/smg-plugin-check/wp-content/plugins/smg-site-suite/
+          cd /tmp/smg-plugin-check
+          wp plugin activate smg-site-suite
+          wp plugin install plugin-check --activate
+
+      - name: WordPress Plugin Check
+        run: |
+          cd /tmp/smg-plugin-check
+          wp plugin check smg-site-suite --require=./wp-content/plugins/plugin-check/cli.php --format=table
