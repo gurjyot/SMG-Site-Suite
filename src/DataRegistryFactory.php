@@ -48,6 +48,19 @@ final class DataRegistryFactory {
             ->register('coupon-role-restrictions','post_meta','_smg_site_suite_coupon_roles','configuration')
             ->register('coupon-maximum-discount','option','smg_site_suite_coupon_max_discount','configuration')
             ->register('coupon-maximum-discount','post_meta','_smg_site_suite_coupon_max_discount','configuration')
-            ->register('custom-order-statuses','option','smg_site_suite_order_statuses','configuration');
+            ->register('custom-order-statuses','option','smg_site_suite_order_statuses','configuration')
+            ->register('security-headers','option','smg_site_suite_security_headers','configuration')
+            ->register('redirect-manager','option','smg_site_suite_redirects','configuration')
+            ->register('404-tracker','option','smg_site_suite_404_log','generated')
+            ->register('404-tracker','option','smg_site_suite_404_settings','configuration')
+            ->register('admin-menu-organizer','option','smg_site_suite_admin_menu','configuration')
+            ->register('temporary-login','user_meta','_smg_site_suite_temp_login','generated')
+            ->register('activity-log-lite','option','smg_site_suite_activity_log','generated')
+            ->register('activity-log-lite','option','smg_site_suite_activity_log_settings','configuration')
+            ->register('smtp-mailer','option','smg_site_suite_smtp','configuration')
+            ->register('mail-log','option','smg_site_suite_mail_log','generated')
+            ->register('mail-log','option','smg_site_suite_mail_log_settings','configuration')
+            ->register('robots-txt-manager','option','smg_site_suite_robots_txt','configuration')
+            ->register('ads-txt-manager','option','smg_site_suite_ads_txt','configuration');
     }
 }
