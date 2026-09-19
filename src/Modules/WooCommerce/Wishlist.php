@@ -16,6 +16,9 @@ final class Wishlist implements SettingsModuleInterface, ActivatableModuleInterf
         add_action('woocommerce_after_shop_loop_item',[$this,'loopButton'],20);
         add_shortcode('smg_wishlist',[$this,'shortcode']);
         add_shortcode('smg_wishlist_count',[$this,'countShortcode']);
+        add_shortcode('smg_wishlist_link',[$this,'linkShortcode']);
+        add_action('admin_post_smg_site_suite_wishlist_move_all',[$this,'moveAllToCart']);
+        add_action('admin_post_nopriv_smg_site_suite_wishlist_move_all',[$this,'moveAllToCart']);
         add_action('wp_ajax_smg_site_suite_wishlist_toggle',[$this,'ajaxToggle']);
         add_action('wp_ajax_nopriv_smg_site_suite_wishlist_toggle',[$this,'ajaxToggle']);
         add_action('woocommerce_init',[$this,'mergeGuestIntoAccount']);
@@ -134,6 +137,12 @@ final class Wishlist implements SettingsModuleInterface, ActivatableModuleInterf
         return (string)count($this->items());
     }
 
+    public function linkShortcode():string{
+        $pageId=(int)get_option(self::PAGE_OPTION,0);
+        $url=$pageId>0?get_permalink($pageId):home_url('/wishlist/');
+        return '<a class="smgss-wishlist-link" href="'.esc_url($url).'">'.esc_html(sprintf(__('Wishlist (%d)','smg-site-suite'),count($this->items()))).'</a>';
+    }
+
     public function shortcode():string{
         $shared=$this->sharedItems();
         $ids=$shared!==null?$shared:$this->items();
@@ -149,7 +158,10 @@ final class Wishlist implements SettingsModuleInterface, ActivatableModuleInterf
         echo '<div class="smgss-wishlist-summary">';
         if(!$readOnly){
             $share=$this->shareUrl($ids);
-            echo '<a class="button" href="'.esc_url($share).'">'.esc_html__('Share Wishlist','smg-site-suite').'</a>';
+            echo '<a class="button" href="'.esc_url($share).'">'.esc_html__('Share Wishlist','smg-site-suite').'</a> ';
+            echo '<form method="post" action="'.esc_url(admin_url('admin-post.php')).'" style="display:inline-block"><input type="hidden" name="action" value="smg_site_suite_wishlist_move_all">';
+            wp_nonce_field('smg_site_suite_wishlist_move_all');
+            echo '<button class="button" type="submit">'.esc_html__('Move Eligible Items to Cart','smg-site-suite').'</button></form>';
         }
         echo '</div><div class="smgss-wishlist-grid">';
         foreach($ids as $id){
@@ -159,6 +171,7 @@ final class Wishlist implements SettingsModuleInterface, ActivatableModuleInterf
             echo '<div class="smgss-wishlist-info"><h3><a href="'.esc_url($product->get_permalink()).'">'.esc_html($product->get_name()).'</a></h3>';
             $subtotal+=(float)$product->get_price();
             echo '<div class="smgss-wishlist-price">'.wp_kses_post($product->get_price_html()).'</div>';
+            echo '<div class="smgss-wishlist-stock">'.esc_html($product->is_in_stock()?__('In stock','smg-site-suite'):__('Out of stock','smg-site-suite')).'</div>';
             echo '<a class="button" href="'.esc_url($product->add_to_cart_url()).'">'.esc_html($product->add_to_cart_text()).'</a> ';
             if(!$readOnly)echo '<button type="button" class="button smgss-wishlist-toggle is-active" data-product-id="'.esc_attr((string)$id).'" aria-pressed="true">'.esc_html((string)($this->settings()['remove_text']??__('Remove from wishlist','smg-site-suite'))).'</button>';
             echo '</div></article>';
@@ -166,6 +179,30 @@ final class Wishlist implements SettingsModuleInterface, ActivatableModuleInterf
         echo '</div>';
         echo '<div class="smgss-wishlist-subtotal"><strong>'.esc_html__('Wishlist subtotal:','smg-site-suite').'</strong> '.wp_kses_post(wc_price($subtotal)).'</div>';
         return (string)ob_get_clean();
+    }
+
+    public function moveAllToCart():void{
+        check_admin_referer('smg_site_suite_wishlist_move_all');
+        if(!WC()->cart)wc_load_cart();
+        if(!WC()->cart)wp_die(esc_html__('Cart is unavailable.','smg-site-suite'));
+
+        $items=$this->items();
+        $remaining=[];
+
+        foreach($items as $productId){
+            $product=wc_get_product($productId);
+            if(!$product||!$product->is_purchasable()||!$product->is_in_stock()||!$product->is_type('simple')){
+                $remaining[]=$productId;
+                continue;
+            }
+
+            $added=WC()->cart->add_to_cart($productId,1);
+            if(!$added)$remaining[]=$productId;
+        }
+
+        $this->saveItems($this->normalize($remaining));
+        wp_safe_redirect(wc_get_cart_url());
+        exit;
     }
 
     public function mergeGuestIntoAccount():void{
