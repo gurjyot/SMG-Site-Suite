@@ -21,6 +21,12 @@ The abilities layer is an adapter over the existing Site Suite registry, module 
 | `smg-site-suite/deactivate-module` | Deactivate a module through ModuleManager | No | Yes |
 | `smg-site-suite/get-module-settings` | Read a module's settings schema and values | Yes | No |
 | `smg-site-suite/update-module-settings` | Save through the module's existing sanitizer | No | Yes |
+| `smg-site-suite/get-system-summary` | Read structured environment diagnostics | Yes | No |
+| `smg-site-suite/list-cron-events` | Inspect scheduled WordPress cron events | Yes | No |
+| `smg-site-suite/list-404s` | Inspect tracked 404 requests | Yes | No |
+| `smg-site-suite/list-redirects` | Read redirect rules and usage stats | Yes | No |
+| `smg-site-suite/upsert-redirect` | Create or replace a local redirect | No | Yes |
+| `smg-site-suite/delete-redirect` | Delete a local redirect | No | Yes |
 
 All abilities declare typed input/output schemas and idempotency annotations.
 
@@ -41,6 +47,8 @@ The WordPress Abilities API performs schema validation and invokes the permissio
 5. High-risk functionality should not become an ability merely because it exists in wp-admin.
 6. New mutating abilities must declare accurate `readonly`, `destructive`, and `idempotent` annotations.
 7. Agent access must never weaken Protected Owner or WordPress capability checks.
+8. Module-specific operational abilities require that module to be active; agent access does not silently bypass disabled modules.
+9. Redirect abilities accept local paths only, reject direct loops, and preserve the existing Redirect Manager as the source of truth.
 
 ## MCP
 
@@ -61,5 +69,8 @@ Integration CI verifies:
 - module discovery works;
 - activation/deactivation persists through ModuleManager;
 - settings updates pass through the module sanitizer;
+- operational abilities refuse to run while their module is inactive;
+- system summary, cron, and 404 data are returned as structured bounded results;
+- redirect create/list/delete round-trips use local-only validation and idempotent deletion;
 - Protected Owner blocks another administrator from ability execution;
 - WordPress 6.5 minimum-runtime activation remains unaffected.
