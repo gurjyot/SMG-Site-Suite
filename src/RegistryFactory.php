@@ -101,6 +101,11 @@ use SMG\SiteSuite\Modules\Content\ExternalPermalinks;
 use SMG\SiteSuite\Modules\Users\LocalUserAvatar;
 use SMG\SiteSuite\Modules\Utilities\CustomBodyClasses;
 use SMG\SiteSuite\Modules\Admin\AdminTaxonomyFilters;
+use SMG\SiteSuite\Modules\Content\ContentExpiration;
+use SMG\SiteSuite\Modules\Media\MediaCategories;
+use SMG\SiteSuite\Modules\Media\MediaDetailsColumns;
+use SMG\SiteSuite\Modules\Admin\DebugLogViewer;
+use SMG\SiteSuite\Modules\Content\InternalContentNotes;
 final class RegistryFactory {
     public static function make():ModuleRegistry{
         $r=(new ModuleRegistry())->addCategory('admin',__('Admin','smg-site-suite'))->addCategory('content',__('Content','smg-site-suite'))->addCategory('media',__('Media','smg-site-suite'))->addCategory('performance',__('Performance','smg-site-suite'))->addCategory('security',__('Security','smg-site-suite'))->addCategory('utilities',__('Utilities','smg-site-suite'))->addCategory('users',__('Users','smg-site-suite'))->addCategory('email',__('Email','smg-site-suite'))->addCategory('woocommerce',__('WooCommerce','smg-site-suite'));
@@ -204,6 +209,11 @@ final class RegistryFactory {
             ['local-user-avatar','Local User Avatar','Use Media Library images as local WordPress user avatars instead of external avatar services.','users',LocalUserAvatar::class,['avatar','users','media'],['all'],'low',false,[]],
             ['custom-body-classes','Custom Body Classes','Add managed global CSS classes to the public body element.','utilities',CustomBodyClasses::class,['css','body','classes'],['frontend'],'low',true,[]],
             ['admin-taxonomy-filters','Admin Taxonomy Filters','Add hierarchical taxonomy dropdown filters to supported post-type list tables.','admin',AdminTaxonomyFilters::class,['taxonomy','admin','filters'],['admin'],'low',false,[]],
+            ['content-expiration','Content Expiration','Schedule content to move to draft, private, or trash at a chosen future time.','content',ContentExpiration::class,['content','expiration','schedule'],['all'],'medium',false,[]],
+            ['media-categories','Media Categories','Add a hierarchical Media Categories taxonomy to WordPress attachments.','media',MediaCategories::class,['media','taxonomy','categories'],['all'],'low',false,[]],
+            ['media-details-columns','Media Details Columns','Show image dimensions and file sizes in the Media Library list view.','media',MediaDetailsColumns::class,['media','dimensions','filesize'],['admin'],'low',false,[]],
+            ['debug-log-viewer','Debug Log Viewer','Read the latest WordPress debug.log lines from a protected admin-only screen.','admin',DebugLogViewer::class,['debug','logs','diagnostics'],['admin'],'medium',false,[]],
+            ['internal-content-notes','Internal Content Notes','Attach private admin-only notes to posts, pages, and other editable content.','content',InternalContentNotes::class,['notes','content','admin'],['admin'],'low',false,[]],
             ['auto-update-email-controls','Auto-Update Email Controls','Optionally suppress WordPress core, plugin, and theme automatic update notification emails.','email',AutoUpdateEmailControls::class,['email','updates','notifications'],['all'],'low',true,[]],
             ['sanitize-upload-filenames','Sanitize Upload Filenames','Normalize new upload filenames to lowercase ASCII kebab-case.','media',SanitizeUploadFilenames::class,['media','filenames','uploads'],['admin','ajax','rest'],'low',false,[]],
             ['temporary-login','Temporary Login','Create one-use expiring administrator access links for support or development.','users',TemporaryLogin::class,['temporary login','support','access'],['all'],'high',false,[]],
