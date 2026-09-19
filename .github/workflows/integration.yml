@@ -90,6 +90,9 @@ jobs:
       - name: Enable HPOS
         run: |
           cd /tmp/smg-wp
+          wp wc hpos compatibility-mode enable
+          wp wc hpos sync
+          wp wc hpos count_unmigrated
           wp wc hpos enable --with-sync --ignore-plugin-compatibility
           wp wc hpos status
 
