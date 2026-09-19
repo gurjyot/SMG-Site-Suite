@@ -70,6 +70,11 @@ jobs:
           wp option update smg_site_suite_active_modules '[]' --format=json
           wp eval-file wp-content/plugins/smg-site-suite/tests/integration/inactive-modules-smoke.php
 
+      - name: Verify module lifecycle contracts
+        run: |
+          cd /tmp/smg-wp
+          wp eval-file wp-content/plugins/smg-site-suite/tests/integration/lifecycle-smoke.php
+
       - name: Measure zero-module bootstrap overhead
         if: matrix.wordpress == '7.1.1'
         run: |
