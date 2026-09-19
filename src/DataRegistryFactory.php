@@ -43,6 +43,11 @@ final class DataRegistryFactory {
             ->register('woo-asset-control','option','smg_site_suite_woo_assets','configuration')
             ->register('cart-fragments-control','option','smg_site_suite_cart_fragments','configuration')
             ->register('my-account-redirects','option','smg_site_suite_account_redirects','configuration')
-            ->register('product-price-history','post_meta','_smg_site_suite_price_history','preserve');
+            ->register('product-price-history','post_meta','_smg_site_suite_price_history','preserve')
+            ->register('coupon-role-restrictions','option','smg_site_suite_coupon_role_restrictions','configuration')
+            ->register('coupon-role-restrictions','post_meta','_smg_site_suite_coupon_roles','configuration')
+            ->register('coupon-maximum-discount','option','smg_site_suite_coupon_max_discount','configuration')
+            ->register('coupon-maximum-discount','post_meta','_smg_site_suite_coupon_max_discount','configuration')
+            ->register('custom-order-statuses','option','smg_site_suite_order_statuses','configuration');
     }
 }
