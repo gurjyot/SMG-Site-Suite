@@ -100,6 +100,7 @@ jobs:
           cat /tmp/smg-profile-ten-selection.json
           cat /tmp/smg-profile-fifty-selection.json
           php "$GITHUB_WORKSPACE/tests/integration/compare-performance-profiles.php" /tmp/smg-profile-zero.json /tmp/smg-profile-ten.json /tmp/smg-profile-fifty.json
+          wp option update smg_site_suite_active_modules '[]' --format=json --quiet
 
       - name: Verify Store API server contracts
         run: |
