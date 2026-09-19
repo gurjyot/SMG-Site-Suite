@@ -30,6 +30,7 @@ $manager=new ModuleManager($registry,$state,$deps);
 
 $originalActive=$state->active();
 $originalPlugins=(array)get_option('active_plugins',[]);
+$originalCheckoutPageId=(int)get_option('woocommerce_checkout_page_id',0);
 $createdPageIds=[];
 $createdUserIds=[];
 
@@ -135,6 +136,28 @@ try{
         unset($_POST['smg_site_suite_expiration_nonce'],$_POST['smg_expiration_date'],$_POST['smg_expiration_action']);
     }
 
+
+    // Checkout Blocks guard should warn when a classic-only module is active.
+    $checkoutPageId=wp_insert_post([
+        'post_title'=>'SMG Integration Checkout',
+        'post_content'=>'<!-- wp:woocommerce/checkout /-->',
+        'post_status'=>'publish',
+        'post_type'=>'page',
+    ],true);
+    if(is_wp_error($checkoutPageId)){
+        $failures[]='Could not create Checkout Blocks compatibility page: '.$checkoutPageId->get_error_message();
+    }else{
+        $createdPageIds[]=(int)$checkoutPageId;
+        update_option('woocommerce_checkout_page_id',(int)$checkoutPageId,false);
+        $state->activate('checkout-field-controls');
+        $guard=new \SMG\SiteSuite\Admin\CompatibilityGuard($registry,$state);
+        ob_start();
+        $guard->checkoutBlocksNotice();
+        $notice=(string)ob_get_clean();
+        $assert(str_contains($notice,'Checkout Field Controls'),'Checkout Blocks compatibility guard did not name the active classic-only module.');
+        $state->deactivate('checkout-field-controls');
+    }
+
     // Settings contract should round-trip through ModuleManager and sanitize bounds.
     $dashboardPageId=wp_insert_post([
         'post_title'=>'SMG Integration Dashboard',
@@ -163,6 +186,7 @@ try{
     foreach($createdUserIds as $userId)wp_delete_user($userId);
     foreach(array_unique($createdPageIds) as $postId)wp_delete_post((int)$postId,true);
     delete_option('smg_site_suite_wishlist_page_id');
+    if($originalCheckoutPageId>0)update_option('woocommerce_checkout_page_id',$originalCheckoutPageId,false);else delete_option('woocommerce_checkout_page_id');
 }
 
 if($failures!==[]){
