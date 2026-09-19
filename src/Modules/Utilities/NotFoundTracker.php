@@ -169,12 +169,20 @@ final class NotFoundTracker implements SettingsModuleInterface {
             $log = [];
         }
 
+        $headings = [
+            __('URL', 'smg-site-suite'),
+            __('Hits', 'smg-site-suite'),
+            __('Last seen', 'smg-site-suite'),
+            __('Referrer', 'smg-site-suite'),
+            __('Create Redirect', 'smg-site-suite'),
+        ];
+
         echo '<div class="wrap">';
         echo '<h1>'.esc_html__('404 Log', 'smg-site-suite').'</h1>';
         echo '<table class="widefat striped">';
         echo '<thead><tr>';
-        foreach (['URL', 'Hits', 'Last seen', 'Referrer', 'Create Redirect'] as $heading) {
-            echo '<th>'.esc_html__($heading, 'smg-site-suite').'</th>';
+        foreach ($headings as $heading) {
+            echo '<th>'.esc_html($heading).'</th>';
         }
         echo '</tr></thead><tbody>';
 
