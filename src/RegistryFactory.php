@@ -81,6 +81,8 @@ use SMG\SiteSuite\Modules\Email\SmtpMailer;
 use SMG\SiteSuite\Modules\Email\MailLog;
 use SMG\SiteSuite\Modules\Utilities\RobotsTxtManager;
 use SMG\SiteSuite\Modules\Utilities\AdsTxtManager;
+use SMG\SiteSuite\Modules\Admin\ProtectedOwner;
+use SMG\SiteSuite\Modules\Admin\CustomDashboardPage;
 final class RegistryFactory {
     public static function make():ModuleRegistry{
         $r=(new ModuleRegistry())->addCategory('admin',__('Admin','smg-site-suite'))->addCategory('content',__('Content','smg-site-suite'))->addCategory('media',__('Media','smg-site-suite'))->addCategory('performance',__('Performance','smg-site-suite'))->addCategory('security',__('Security','smg-site-suite'))->addCategory('utilities',__('Utilities','smg-site-suite'))->addCategory('users',__('Users','smg-site-suite'))->addCategory('email',__('Email','smg-site-suite'))->addCategory('woocommerce',__('WooCommerce','smg-site-suite'));
@@ -164,7 +166,9 @@ final class RegistryFactory {
             ['security-headers','Security Headers','Add conservative HTTP security headers without requiring server configuration changes.','security',SecurityHeaders::class,['security','headers','http'],['all'],'medium',true,[]],
             ['redirect-manager','Redirect Manager','Create lightweight local 301 redirect rules from old paths to new paths.','utilities',RedirectManager::class,['redirects','seo','404'],['frontend'],'medium',true,[]],
             ['404-tracker','404 Tracker','Keep a bounded local log of missing URLs, hit counts, last-seen time, and referrers.','utilities',NotFoundTracker::class,['404','seo','tracking'],['frontend','admin'],'low',true,[]],
-            ['admin-menu-organizer','Admin Menu Organizer','Hide selected top-level wp-admin menu items for administrators.','admin',AdminMenuOrganizer::class,['admin menu','organizer','cleanup'],['admin'],'low',true,[]],
+            ['admin-menu-organizer','Admin Menu Organizer','Visually choose which live wp-admin menus and submenus ordinary administrators can see.','admin',AdminMenuOrganizer::class,['admin menu','organizer','client admin'],['admin'],'medium',false,[]],
+            ['protected-owner','Protected Owner','Protect designated administrator accounts from being edited, demoted, removed, or deleted by ordinary administrators.','admin',ProtectedOwner::class,['owner','admin','protection','white label'],['all'],'high',false,[]],
+            ['custom-dashboard-page','Custom Dashboard Page','Replace the WordPress dashboard with any published page built in Bricks, Elementor, Beaver Builder, Gutenberg, or another builder.','admin',CustomDashboardPage::class,['dashboard','builder','white label','client'],['admin','frontend'],'medium',true,[]],
             ['sanitize-upload-filenames','Sanitize Upload Filenames','Normalize new upload filenames to lowercase ASCII kebab-case.','media',SanitizeUploadFilenames::class,['media','filenames','uploads'],['admin','ajax','rest'],'low',false,[]],
             ['temporary-login','Temporary Login','Create one-use expiring administrator access links for support or development.','users',TemporaryLogin::class,['temporary login','support','access'],['all'],'high',false,[]],
             ['activity-log-lite','Activity Log Lite','Keep a bounded local history of logins, plugin/theme changes, and content saves.','admin',ActivityLogLite::class,['activity','audit','log'],['all'],'medium',true,[]],
