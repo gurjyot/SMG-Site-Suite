@@ -57,6 +57,7 @@ final class ModuleManager {
         $dependencies = $this->dependencies->check($module);
 
         if (!$dependencies['available']) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are internal diagnostics, not HTML output.
             throw new RuntimeException(
                 'Cannot activate module; missing dependencies: '.implode(', ', $dependencies['missing'])
             );
@@ -87,11 +88,13 @@ final class ModuleManager {
         $module = $this->requireDefinition($slug);
 
         if (!$module->hasSettings()) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are internal diagnostics, not HTML output.
             throw new RuntimeException('Module has no settings contract.');
         }
 
         $instance = $this->instance($module);
         if (!$instance instanceof SettingsModuleInterface) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are internal diagnostics, not HTML output.
             throw new RuntimeException(
                 'Module metadata claims settings support but class does not implement SettingsModuleInterface.'
             );
@@ -103,6 +106,7 @@ final class ModuleManager {
     private function requireDefinition(string $slug): ModuleDefinition {
         $module = $this->registry->get($slug);
         if (!$module) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are internal diagnostics, not HTML output.
             throw new RuntimeException('Unknown module: '.$slug);
         }
 
@@ -112,11 +116,13 @@ final class ModuleManager {
     private function instance(ModuleDefinition $definition): ModuleInterface {
         $class = $definition->className();
         if (!class_exists($class)) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are internal diagnostics, not HTML output.
             throw new RuntimeException('Module class not found: '.$class);
         }
 
         $instance = new $class();
         if (!$instance instanceof ModuleInterface) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are internal diagnostics, not HTML output.
             throw new RuntimeException('Module must implement ModuleInterface: '.$class);
         }
 
