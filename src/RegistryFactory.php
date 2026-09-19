@@ -42,6 +42,13 @@ use SMG\SiteSuite\Modules\Content\RemoveCommentWebsiteField;
 use SMG\SiteSuite\Modules\Email\EmailSenderIdentity;
 use SMG\SiteSuite\Modules\Admin\SystemSummary;
 use SMG\SiteSuite\Modules\WooCommerce\Wishlist;
+use SMG\SiteSuite\Modules\Utilities\MaintenanceMode;
+use SMG\SiteSuite\Modules\Utilities\HeadBodyFooterCode;
+use SMG\SiteSuite\Modules\Security\GenericLoginErrors;
+use SMG\SiteSuite\Modules\Content\SearchPostsOnly;
+use SMG\SiteSuite\Modules\Content\DisableTexturize;
+use SMG\SiteSuite\Modules\Performance\RemoveRecentCommentsCss;
+use SMG\SiteSuite\Modules\Users\LoginLogoutRedirects;
 final class RegistryFactory {
     public static function make():ModuleRegistry{
         $r=(new ModuleRegistry())->addCategory('admin',__('Admin','smg-site-suite'))->addCategory('content',__('Content','smg-site-suite'))->addCategory('media',__('Media','smg-site-suite'))->addCategory('performance',__('Performance','smg-site-suite'))->addCategory('security',__('Security','smg-site-suite'))->addCategory('utilities',__('Utilities','smg-site-suite'))->addCategory('users',__('Users','smg-site-suite'))->addCategory('email',__('Email','smg-site-suite'))->addCategory('woocommerce',__('WooCommerce','smg-site-suite'));
@@ -73,6 +80,13 @@ final class RegistryFactory {
             ['remove-comment-website-field','Remove Comment Website Field','Remove the website URL field from the default WordPress comment form.','content',RemoveCommentWebsiteField::class,['comments','spam','form'],['frontend'],'low',false,[]],
             ['email-sender-identity','Email Sender Identity','Set a custom default From name and From email for WordPress mail.','email',EmailSenderIdentity::class,['email','sender','mail'],['all'],'low',true,[]],
             ['system-summary','System Summary','Add a read-only Site Suite system summary page for WordPress, PHP, database, theme, memory, timezone, and debug status.','admin',SystemSummary::class,['system','diagnostics','admin'],['admin'],'low',false,[]],
+            ['maintenance-mode','Maintenance Mode','Return a lightweight 503 maintenance page to visitors while administrators retain access.','utilities',MaintenanceMode::class,['maintenance','503','site'],['frontend'],'medium',true,[]],
+            ['head-body-footer-code','Head / Body / Footer Code','Insert trusted administrator code into the public head, body-open, or footer locations.','utilities',HeadBodyFooterCode::class,['code','analytics','scripts'],['frontend'],'high',true,[]],
+            ['generic-login-errors','Generic Login Errors','Hide detailed WordPress login failure reasons behind a generic error message.','security',GenericLoginErrors::class,['login','security','errors'],['all'],'low',false,[]],
+            ['search-posts-only','Search Posts Only','Limit the default front-end WordPress search to posts.','content',SearchPostsOnly::class,['search','posts','content'],['frontend'],'low',false,[]],
+            ['disable-texturize','Disable Texturize','Disable WordPress smart quotes and automatic typographic character substitutions.','content',DisableTexturize::class,['texturize','editor','content'],['all'],'low',false,[]],
+            ['remove-recent-comments-css','Remove Recent Comments CSS','Stop the legacy Recent Comments widget from adding inline CSS to the page head.','performance',RemoveRecentCommentsCss::class,['comments','css','performance'],['frontend'],'low',false,[]],
+            ['login-logout-redirects','Login / Logout Redirects','Set optional destinations after successful login and logout.','users',LoginLogoutRedirects::class,['login','logout','redirect'],['all'],'medium',true,[]],
             ['disable-dashicons-frontend','Disable Dashicons for Guests','Stop loading Dashicons on the public frontend for logged-out visitors.','performance',DisableDashiconsFrontend::class,['dashicons','performance','assets'],['frontend'],'low',false,[]],
             ['disable-file-editing','Disable Theme / Plugin File Editors','Remove access to the built-in WordPress theme and plugin code editors.','security',DisableFileEditing::class,['file editor','security','admin'],['admin'],'low',false,[]],
             ['show-ids','Show IDs','Add ID columns to WordPress post type and taxonomy list tables.','admin',ShowIds::class,['ids','admin','columns'],['admin'],'low',false,[]],
