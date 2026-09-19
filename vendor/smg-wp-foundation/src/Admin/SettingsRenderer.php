@@ -13,7 +13,12 @@ final class SettingsRenderer {
     }
     private function control(string $type,string $key,mixed $value,array $field):void{
         $name='settings['.$key.']';$id='smg-field-'.$key;
-        if($type==='page_select'){
+        if($type==='media_select'){
+            $attachmentId=absint($value);
+            $preview=$attachmentId?wp_get_attachment_image($attachmentId,'thumbnail',false,['style'=>'max-width:80px;height:auto;display:block;margin:0 0 8px']):'';
+            echo '<div class="smg-foundation-media-field">'.$preview;
+            printf('<input type="hidden" id="%1$s" name="%2$s" value="%3$s"><button type="button" class="button smg-foundation-media-select" data-target="%1$s">%4$s</button> <button type="button" class="button-link-delete smg-foundation-media-clear" data-target="%1$s">%5$s</button></div>',esc_attr($id),esc_attr($name),esc_attr((string)$attachmentId),esc_html__('Choose Media','smg-site-suite'),esc_html__('Clear','smg-site-suite'));
+        }elseif($type==='page_select'){
             wp_dropdown_pages([
                 'name'=>$name,
                 'id'=>$id,
