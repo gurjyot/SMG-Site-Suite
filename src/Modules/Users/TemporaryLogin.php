@@ -84,7 +84,12 @@ final class TemporaryLogin implements ModuleInterface {
             if(!is_array($data)||(int)($data['expires']??0)<time())continue;
             if(!wp_check_password($token,(string)($data['hash']??'')))continue;
 
-            delete_user_meta($user->ID,self::META);
+            if(!empty($data['temporary_user'])){
+                $data['hash']='';
+                update_user_meta($user->ID,self::META,$data);
+            }else{
+                delete_user_meta($user->ID,self::META);
+            }
             wp_set_current_user($user->ID);
             wp_set_auth_cookie($user->ID,false,is_ssl());
             wp_safe_redirect(admin_url());
