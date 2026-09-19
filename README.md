@@ -32,7 +32,7 @@ Presets are additive: they enable useful modules without wiping unrelated active
 
 ## Current catalog
 
-**101 modules** across Admin, Content, Media, Performance, Security, Utilities, Users, and WooCommerce.
+**135 modules** across Admin, Content, Email, Media, Performance, Security, Utilities, Users, and WooCommerce.
 
 Highlights include:
 

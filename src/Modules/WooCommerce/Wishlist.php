@@ -9,6 +9,7 @@ final class Wishlist implements SettingsModuleInterface, ActivatableModuleInterf
     private const PAGE_OPTION='smg_site_suite_wishlist_page_id';
     private const USER_META='_smg_site_suite_wishlist';
     private const SESSION_KEY='smg_site_suite_wishlist';
+    private const MAX_ITEMS=50;
 
     public function register():void{
         add_action('wp_enqueue_scripts',[$this,'assets']);
@@ -149,7 +150,7 @@ final class Wishlist implements SettingsModuleInterface, ActivatableModuleInterf
         $readOnly=$shared!==null;
         if($ids===[])return '<div class="smgss-wishlist-empty">'.esc_html__('Your wishlist is empty.','smg-site-suite').'</div>';
 
-        $products=wc_get_products(['include'=>$ids,'limit'=>-1,'status'=>'publish']);
+        $products=wc_get_products(['include'=>$ids,'limit'=>self::MAX_ITEMS,'status'=>'publish']);
         $map=[];
         foreach($products as $product)if($product instanceof \WC_Product)$map[$product->get_id()]=$product;
 
@@ -261,7 +262,7 @@ final class Wishlist implements SettingsModuleInterface, ActivatableModuleInterf
     }
 
     private function shareUrl(array $ids):string{
-        $ids=array_slice($this->normalize($ids),0,50);
+        $ids=array_slice($this->normalize($ids),0,self::MAX_ITEMS);
         $payload=implode(',',$ids);
         $encoded=rtrim(strtr(base64_encode($payload),'+/','-_'),'=');
         $sig=hash_hmac('sha256',$encoded,wp_salt('auth'));
@@ -281,10 +282,10 @@ final class Wishlist implements SettingsModuleInterface, ActivatableModuleInterf
         if($padding)$padded.=str_repeat('=',4-$padding);
         $decoded=base64_decode($padded,true);
         if(!is_string($decoded))return [];
-        return array_slice($this->normalize(explode(',',$decoded)),0,50);
+        return array_slice($this->normalize(explode(',',$decoded)),0,self::MAX_ITEMS);
     }
 
     private function normalize(array $items):array{
-        return array_values(array_unique(array_filter(array_map('absint',$items))));
+        return array_slice(array_values(array_unique(array_filter(array_map('absint',$items)))),0,self::MAX_ITEMS);
     }
 }
