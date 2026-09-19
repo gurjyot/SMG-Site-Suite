@@ -22,9 +22,20 @@ $required=[
 $active=(array)get_option('smg_site_suite_active_modules',[]);
 foreach($required as $slug)$assert(in_array($slug,$active,true),"Expected active module: {$slug}");
 
-$assert(has_filter('manage_woocommerce_page_wc-orders_columns')!==false,'HPOS order columns filter not registered.');
-$assert(has_action('manage_woocommerce_page_wc-orders_custom_column')!==false,'HPOS order custom-column action not registered.');
-$assert(has_filter('manage_edit-shop_order_columns')!==false,'Legacy order columns filter not registered.');
+// WP-CLI is not an admin request, so admin-only modules should not have been
+// loaded by ModuleLoader. Exercise their register() methods explicitly here
+// to validate their legacy + HPOS hook contracts without weakening contexts.
+$adminModules=[
+    new \SMG\SiteSuite\Modules\WooCommerce\PaymentMethodColumn(),
+    new \SMG\SiteSuite\Modules\WooCommerce\OrderPhoneColumn(),
+    new \SMG\SiteSuite\Modules\WooCommerce\OrderNotesColumn(),
+    new \SMG\SiteSuite\Modules\WooCommerce\OrderItemSummaryColumn(),
+];
+foreach($adminModules as $module)$module->register();
+
+$assert(has_filter('manage_woocommerce_page_wc-orders_columns')!==false,'HPOS order columns filter not registered after explicit admin-module registration.');
+$assert(has_action('manage_woocommerce_page_wc-orders_custom_column')!==false,'HPOS order custom-column action not registered after explicit admin-module registration.');
+$assert(has_filter('manage_edit-shop_order_columns')!==false,'Legacy order columns filter not registered after explicit admin-module registration.');
 
 $product=new \WC_Product_Simple();
 $product->set_name('SMG Integration Product');
