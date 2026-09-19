@@ -116,3 +116,50 @@ jobs:
         run: |
           cd /tmp/smg-wp
           wp eval-file wp-content/plugins/smg-site-suite/tests/integration/runtime-smoke.php
+
+
+  wordpress-minimum:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: wordpress_minimum
+          MYSQL_USER: wordpress
+          MYSQL_PASSWORD: wordpress
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.0'
+          coverage: none
+          tools: wp-cli
+
+      - name: Install minimum supported WordPress
+        run: |
+          mkdir -p /tmp/smg-wp-min
+          cd /tmp/smg-wp-min
+          wp core download --version=6.5.11 --force
+          wp config create --dbname=wordpress_minimum --dbuser=wordpress --dbpass=wordpress --dbhost=127.0.0.1:3306 --skip-check
+          wp core install --url=http://smg-min.test --title="SMG Minimum" --admin_user=admin --admin_password=admin --admin_email=admin@example.test --skip-email
+
+      - name: Install and activate Site Suite without WooCommerce
+        run: |
+          mkdir -p /tmp/smg-wp-min/wp-content/plugins/smg-site-suite
+          rsync -a --exclude='.git' "$GITHUB_WORKSPACE/" /tmp/smg-wp-min/wp-content/plugins/smg-site-suite/
+          cd /tmp/smg-wp-min
+          wp plugin activate smg-site-suite
+          wp option update smg_site_suite_active_modules '[]' --format=json
+          wp eval-file wp-content/plugins/smg-site-suite/tests/integration/inactive-modules-smoke.php
+          wp eval-file wp-content/plugins/smg-site-suite/tests/integration/core-minimum-smoke.php
