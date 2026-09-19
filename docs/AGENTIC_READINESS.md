@@ -49,15 +49,16 @@ The WordPress Abilities API performs schema validation and invokes the permissio
 1. Abilities call existing application services; they do not write Site Suite options directly when a manager/settings contract exists.
 2. Module activation and deactivation always use `ModuleManager`.
 3. Settings writes always use the target module's `saveSettings()` sanitizer.
-4. Dependency failures are returned as structured WordPress errors.
-5. High-risk functionality should not become an ability merely because it exists in wp-admin.
-6. New mutating abilities must declare accurate `readonly`, `destructive`, and `idempotent` annotations.
-7. Agent access must never weaken Protected Owner or WordPress capability checks.
-8. Module-specific operational abilities require that module to be active; agent access does not silently bypass disabled modules.
-9. Redirect abilities accept local paths only, reject direct loops, and preserve the existing Redirect Manager as the source of truth.
-10. Diagnostic abilities return bounded structured data and do not expose plugin settings, passwords, email logs, user records, or WooCommerce customer/order data.
-11. Site Health abilities mirror existing Site Suite checks and remain read-only; agents do not change production settings through health diagnostics.
-12. Preset application is additive and idempotent: it may enable preset modules but never disables unrelated active modules or replaces configuration.
+4. Agent settings responses never return password/secret fields or common token/API-key values; sensitive fields remain writable and are reported by name in `redacted_fields`.
+5. Dependency failures are returned as structured WordPress errors.
+6. High-risk functionality should not become an ability merely because it exists in wp-admin.
+7. New mutating abilities must declare accurate `readonly`, `destructive`, and `idempotent` annotations.
+8. Agent access must never weaken Protected Owner or WordPress capability checks.
+9. Module-specific operational abilities require that module to be active; agent access does not silently bypass disabled modules.
+10. Redirect abilities accept local paths only, reject direct loops, and preserve the existing Redirect Manager as the source of truth.
+11. Diagnostic abilities return bounded structured data and do not expose plugin settings, passwords, email logs, user records, or WooCommerce customer/order data.
+12. Site Health abilities mirror existing Site Suite checks and remain read-only; agents do not change production settings through health diagnostics.
+13. Preset application is additive and idempotent: it may enable preset modules but never disables unrelated active modules or replaces configuration.
 
 ## MCP
 
@@ -78,6 +79,7 @@ Integration CI verifies:
 - module discovery works;
 - activation/deactivation persists through ModuleManager;
 - settings updates pass through the module sanitizer;
+- password/secret/token/API-key settings are redacted from both read and write responses while still permitting secret rotation;
 - operational abilities refuse to run while their module is inactive;
 - system summary, cron, and 404 data are returned as structured bounded results;
 - redirect create/list/delete round-trips use local-only validation and idempotent deletion;
