@@ -40,7 +40,12 @@ final class ConfigurationsPage {
             'security'=>[
                 'name'=>__('Security Basics','smg-site-suite'),
                 'description'=>__('Low-risk WordPress hardening without changing login behavior.','smg-site-suite'),
-                'modules'=>['hide-wp-version','disable-xml-rpc','disable-application-passwords','disable-file-editing'],
+                'modules'=>['hide-wp-version','disable-xml-rpc','disable-application-passwords','disable-file-editing','security-headers','generic-login-errors'],
+            ],
+            'agency-client-handoff'=>[
+                'name'=>__('Agency Client Handoff','smg-site-suite'),
+                'description'=>__('Protect the agency owner, simplify client wp-admin, and enable branding/dashboard controls for a managed client site.','smg-site-suite'),
+                'modules'=>['protected-owner','admin-menu-organizer','custom-dashboard-page','login-branding','admin-footer','dashboard-widgets','hide-admin-notices','environment-indicator','activity-log-lite'],
             ],
             'performance'=>[
                 'name'=>__('Performance Basics','smg-site-suite'),
@@ -54,8 +59,8 @@ final class ConfigurationsPage {
             ],
             'woo-store-basics'=>[
                 'name'=>__('Woo Store Basics','smg-site-suite'),
-                'description'=>__('Useful WooCommerce order, checkout, shipping, and conversion helpers.','smg-site-suite'),
-                'modules'=>['payment-method-column','order-phone-column','buy-now','shipping-progress','free-shipping-only','cod-rules','order-amount-rules'],
+                'description'=>__('Useful WooCommerce order, checkout, shipping, conversion, and operations helpers.','smg-site-suite'),
+                'modules'=>['payment-method-column','order-phone-column','buy-now','shipping-progress','free-shipping-only','cod-rules','order-amount-rules','woocommerce-wishlist','whatsapp-enquiry','product-tabs-control','disable-marketplace-suggestions'],
             ],
         ];
     }
@@ -125,10 +130,21 @@ final class ConfigurationsPage {
         $payload=is_string($raw)?json_decode($raw,true):null;
         if(!is_array($payload)||(int)($payload['schema']??0)!==1||($payload['product']??'')!=='smg-site-suite')wp_die(esc_html__('Invalid Site Suite configuration file.','smg-site-suite'));
 
-        $requested=is_array($payload['active_modules']??null)?array_map('sanitize_key',$payload['active_modules']):[];
+        $requested=is_array($payload['active_modules']??null)?array_values(array_unique(array_map('sanitize_key',$payload['active_modules']))):[];
         $known=array_keys($this->manager->registry()->all());
         $accepted=array_values(array_intersect($requested,$known));
-        $this->manager->state()->setActive($accepted);
+        $current=$this->manager->state()->active();
+
+        foreach(array_values(array_diff($current,$accepted)) as $slug){
+            try{$this->manager->deactivate($slug);}catch(RuntimeException $e){continue;}
+        }
+
+        foreach(array_values(array_diff($accepted,$current)) as $slug){
+            $status=$this->manager->status($slug);
+            if(!$status['known']||!$status['available'])continue;
+            try{$this->manager->activate($slug);}catch(RuntimeException $e){continue;}
+        }
+
         $this->redirectNotice('import');
     }
 
