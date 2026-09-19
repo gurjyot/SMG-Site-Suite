@@ -29,7 +29,7 @@ final class ConfigurationsPage {
         return [
             'starter'=>[
                 'name'=>__('Starter Pack','smg-site-suite'),
-                'description'=>__('Safe cleanup, basic security, and useful admin improvements.','smg-site-suite'),
+                'description'=>__('Common cleanup, security, and admin tools for a new site.','smg-site-suite'),
                 'modules'=>['disable-emojis','disable-embeds','disable-xml-rpc','disable-dashicons-frontend','hide-wp-version','disable-application-passwords','disable-file-editing','show-ids','active-plugins-first','featured-image-column'],
             ],
             'clean-wordpress'=>[
@@ -39,27 +39,27 @@ final class ConfigurationsPage {
             ],
             'security'=>[
                 'name'=>__('Security Basics','smg-site-suite'),
-                'description'=>__('Low-risk WordPress hardening without changing login behavior.','smg-site-suite'),
+                'description'=>__('Basic WordPress hardening without changing the login flow.','smg-site-suite'),
                 'modules'=>['hide-wp-version','disable-xml-rpc','disable-application-passwords','disable-file-editing','security-headers','generic-login-errors'],
             ],
             'agency-client-handoff'=>[
                 'name'=>__('Agency Client Handoff','smg-site-suite'),
-                'description'=>__('Protect the agency owner, simplify client wp-admin, and enable branding/dashboard controls for a managed client site.','smg-site-suite'),
+                'description'=>__('Protect the agency account, simplify the client dashboard, and apply the usual handoff branding.','smg-site-suite'),
                 'modules'=>['protected-owner','admin-menu-organizer','custom-dashboard-page','login-branding','admin-footer','dashboard-widgets','hide-admin-notices','environment-indicator','activity-log-lite'],
             ],
             'performance'=>[
                 'name'=>__('Performance Basics','smg-site-suite'),
-                'description'=>__('Lightweight frontend and admin performance cleanup.','smg-site-suite'),
+                'description'=>__('Remove common frontend assets and reduce background admin work.','smg-site-suite'),
                 'modules'=>['disable-emojis','disable-embeds','disable-dashicons-frontend','clean-wp-head','heartbeat-control','revision-control'],
             ],
             'admin-productivity'=>[
                 'name'=>__('Admin Productivity','smg-site-suite'),
-                'description'=>__('Useful WordPress admin list-table and dashboard improvements.','smg-site-suite'),
+                'description'=>__('Add the admin columns and dashboard changes we use most often.','smg-site-suite'),
                 'modules'=>['show-ids','active-plugins-first','featured-image-column','dashboard-widgets','footer-timezone','admin-footer'],
             ],
             'woo-store-basics'=>[
                 'name'=>__('Woo Store Basics','smg-site-suite'),
-                'description'=>__('Useful WooCommerce order, checkout, shipping, conversion, and operations helpers.','smg-site-suite'),
+                'description'=>__('Enable the WooCommerce tools we commonly use on client stores.','smg-site-suite'),
                 'modules'=>['payment-method-column','order-phone-column','buy-now','shipping-progress','free-shipping-only','cod-rules','order-amount-rules','woocommerce-wishlist','whatsapp-enquiry','product-tabs-control','disable-marketplace-suggestions'],
             ],
         ];
@@ -69,7 +69,7 @@ final class ConfigurationsPage {
         if(!current_user_can('manage_options'))return;
         $active=$this->manager->state()->active();
         echo '<div class="wrap"><h1>'.esc_html__('Site Suite Configurations','smg-site-suite').'</h1>';
-        echo '<p>'.esc_html__('Apply a preset additively, or transfer the active-module selection between sites. Existing module settings are preserved.','smg-site-suite').'</p>';
+        echo '<p>'.esc_html__('Presets add modules without turning anything off. You can also export or import the active module list; module settings stay unchanged.','smg-site-suite').'</p>';
         echo '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;max-width:1100px">';
         foreach(self::presets() as $slug=>$preset){
             $url=wp_nonce_url(admin_url('admin-post.php?action=smg_site_suite_apply_preset&preset='.rawurlencode($slug)),'smg_site_suite_preset_'.$slug);
