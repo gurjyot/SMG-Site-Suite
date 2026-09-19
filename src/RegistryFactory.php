@@ -35,9 +35,16 @@ use SMG\SiteSuite\Modules\Content\ExternalLinksNewTab;
 use SMG\SiteSuite\Modules\Utilities\CustomExcerptLength;
 use SMG\SiteSuite\Modules\Content\CustomFrontendCss;
 use SMG\SiteSuite\Modules\Admin\CustomAdminCss;
+use SMG\SiteSuite\Modules\Content\AutoPublishMissedSchedules;
+use SMG\SiteSuite\Modules\Media\DisableBigImageScaling;
+use SMG\SiteSuite\Modules\Content\DisableSelfPingbacks;
+use SMG\SiteSuite\Modules\Content\RemoveCommentWebsiteField;
+use SMG\SiteSuite\Modules\Email\EmailSenderIdentity;
+use SMG\SiteSuite\Modules\Admin\SystemSummary;
+use SMG\SiteSuite\Modules\WooCommerce\Wishlist;
 final class RegistryFactory {
     public static function make():ModuleRegistry{
-        $r=(new ModuleRegistry())->addCategory('admin',__('Admin','smg-site-suite'))->addCategory('content',__('Content','smg-site-suite'))->addCategory('media',__('Media','smg-site-suite'))->addCategory('performance',__('Performance','smg-site-suite'))->addCategory('security',__('Security','smg-site-suite'))->addCategory('utilities',__('Utilities','smg-site-suite'))->addCategory('users',__('Users','smg-site-suite'))->addCategory('woocommerce',__('WooCommerce','smg-site-suite'));
+        $r=(new ModuleRegistry())->addCategory('admin',__('Admin','smg-site-suite'))->addCategory('content',__('Content','smg-site-suite'))->addCategory('media',__('Media','smg-site-suite'))->addCategory('performance',__('Performance','smg-site-suite'))->addCategory('security',__('Security','smg-site-suite'))->addCategory('utilities',__('Utilities','smg-site-suite'))->addCategory('users',__('Users','smg-site-suite'))->addCategory('email',__('Email','smg-site-suite'))->addCategory('woocommerce',__('WooCommerce','smg-site-suite'));
         $defs=[
             ['disable-comments','Disable Comments','Disable comments, pingbacks, trackbacks, and comment admin surfaces.','content',DisableComments::class,['comments','spam'],['all'],'low',false,[]],
             ['duplicate-content','Duplicate Content','Duplicate posts, pages, and public custom post types from the list screen.','content',DuplicateContent::class,['duplicate','clone'],['admin'],'medium',false,[]],
@@ -60,6 +67,12 @@ final class RegistryFactory {
             ['custom-excerpt-length','Custom Excerpt Length','Control the word length of automatically generated WordPress excerpts.','utilities',CustomExcerptLength::class,['excerpt','content','length'],['all'],'low',true,[]],
             ['custom-frontend-css','Custom Frontend CSS','Add lightweight custom CSS to the public site without editing theme files.','content',CustomFrontendCss::class,['css','frontend','design'],['frontend'],'medium',true,[]],
             ['custom-admin-css','Custom Admin CSS','Add lightweight custom CSS to wp-admin without editing plugin or theme files.','admin',CustomAdminCss::class,['css','admin','design'],['admin'],'medium',true,[]],
+            ['auto-publish-missed-schedules','Recover Missed Scheduled Posts','Publish a small batch of overdue scheduled posts when normal WP-Cron misses them.','content',AutoPublishMissedSchedules::class,['schedule','publishing','cron'],['frontend'],'low',false,[]],
+            ['disable-big-image-scaling','Disable Big Image Scaling','Stop WordPress from automatically scaling down very large uploaded images.','media',DisableBigImageScaling::class,['images','media','scaling'],['admin','ajax','rest'],'low',false,[]],
+            ['disable-self-pingbacks','Disable Self Pingbacks','Prevent WordPress from pinging your own site when linking internally.','content',DisableSelfPingbacks::class,['pingback','content','links'],['all'],'low',false,[]],
+            ['remove-comment-website-field','Remove Comment Website Field','Remove the website URL field from the default WordPress comment form.','content',RemoveCommentWebsiteField::class,['comments','spam','form'],['frontend'],'low',false,[]],
+            ['email-sender-identity','Email Sender Identity','Set a custom default From name and From email for WordPress mail.','email',EmailSenderIdentity::class,['email','sender','mail'],['all'],'low',true,[]],
+            ['system-summary','System Summary','Add a read-only Site Suite system summary page for WordPress, PHP, database, theme, memory, timezone, and debug status.','admin',SystemSummary::class,['system','diagnostics','admin'],['admin'],'low',false,[]],
             ['disable-dashicons-frontend','Disable Dashicons for Guests','Stop loading Dashicons on the public frontend for logged-out visitors.','performance',DisableDashiconsFrontend::class,['dashicons','performance','assets'],['frontend'],'low',false,[]],
             ['disable-file-editing','Disable Theme / Plugin File Editors','Remove access to the built-in WordPress theme and plugin code editors.','security',DisableFileEditing::class,['file editor','security','admin'],['admin'],'low',false,[]],
             ['show-ids','Show IDs','Add ID columns to WordPress post type and taxonomy list tables.','admin',ShowIds::class,['ids','admin','columns'],['admin'],'low',false,[]],
@@ -80,6 +93,7 @@ final class RegistryFactory {
             ['cod-rules','COD Amount Rules','Show COD only when the cart total is within configured minimum and maximum amounts.','woocommerce',CodRules::class,['woocommerce','cod','payment'],['frontend','ajax','rest'],'medium',true,['plugins'=>['woocommerce/woocommerce.php']]],
             ['shipping-progress','Free Shipping Progress Bar','Show customers how much more they need to spend to reach a configured free-shipping threshold.','woocommerce',ShippingProgressBar::class,['woocommerce','shipping','progress'],['frontend','ajax'],'low',false,['plugins'=>['woocommerce/woocommerce.php']]],
             ['fomo-sales-notifications','FOMO Sales Notifications','Cache up to 20 recent paid orders once daily and show lightweight randomized purchase notifications.','woocommerce',FomoSalesNotifications::class,['woocommerce','fomo','sales','notifications'],['all'],'medium',true,['plugins'=>['woocommerce/woocommerce.php']]],
+            ['woocommerce-wishlist','Wishlist','Lightweight WooCommerce wishlist for guests and logged-in users with AJAX toggles, a wishlist page, and optional post-purchase removal.','woocommerce',Wishlist::class,['woocommerce','wishlist','favorites'],['all'],'medium',true,['plugins'=>['woocommerce/woocommerce.php']]],
         ];
         foreach($defs as [$slug,$name,$description,$category,$class,$tags,$contexts,$risk,$settings,$dependencies]){
             $r->register(new ModuleDefinition(['slug'=>$slug,'name'=>__($name,'smg-site-suite'),'description'=>__($description,'smg-site-suite'),'category'=>$category,'class'=>$class,'tags'=>$tags,'contexts'=>$contexts,'risk'=>$risk,'has_settings'=>$settings,'dependencies'=>$dependencies]));
