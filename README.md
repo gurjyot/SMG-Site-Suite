@@ -2,21 +2,48 @@
 
 A modular WordPress and WooCommerce enhancement suite by Singh Media Group.
 
-## Architecture principles
+**Development status:** v0.1.0-dev
 
-- Disabled modules load no module PHP and register no module hooks.
-- Modules are explicitly registered; the plugin does not scan arbitrary PHP files at runtime.
-- Module assets load only where needed.
-- WooCommerce modules are isolated and dependency-aware.
-- Small enhancements live here; application-sized SMG products remain standalone plugins.
-- WordPress capabilities, nonces, sanitization, escaping, and recovery paths are required from the start.
+Site Suite bundles SMG WP Foundation internally. There is no separate Foundation plugin dependency.
 
-## Initial categories
+## Core behavior
 
-Admin, Content, Media, Performance, Security, Utilities, and WooCommerce.
+- Searchable, category-based module browser inspired by the usability principles of WP Switchboard but independently implemented.
+- Disabled modules do not initialize.
+- Explicit module registry; no source/docblock scanning.
+- Dependency-aware WooCommerce modules.
+- Per-module settings only where needed.
+- Shared Foundation lifecycle, security and performance contracts.
 
-## First module batch
+## Current modules
 
-Disable Comments, Duplicate Content, Safe SVG Upload, Login Branding, Admin Footer, Dashboard Widgets, Revision Control, Heartbeat Control, Disable WooCommerce Reviews, Payment Method Column, Min/Max Order Amount, and Free Shipping Method Control.
+### Admin
+- Login Branding
+- Admin Footer
+- Dashboard Widgets
 
-Subsequent modules include COD Rules, Buy Now, Shipping Progress Bar, Login URL, Wishlist, FOMO Sales Notifications, Discounts, and Code Snippets.
+### Content
+- Disable Comments
+- Duplicate Content
+- Revision Control
+
+### Media
+- Safe SVG Upload
+
+### Performance
+- Heartbeat Control
+
+### WooCommerce
+- Disable Product Reviews
+- Payment Method Column (legacy + HPOS)
+- Minimum / Maximum Order Amount
+- Free Shipping Method Control
+- Buy Now Button
+- COD Amount Rules
+- Free Shipping Progress Bar
+
+## Next module systems
+
+Wishlist, FOMO Sales Notifications, rule-based Discounts, Change/Hide Login URL, Code Snippets, plus further WooCommerce utilities.
+
+See [Architecture](docs/ARCHITECTURE.md).
