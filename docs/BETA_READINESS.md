@@ -131,7 +131,7 @@ Run these on a staging site with a backup and a second administrator account.
 - [x] Compare zero-module Site Suite vs Site Suite disabled.
 - [ ] Representative 10-module profile recorded.
 - [ ] Woo storefront profile recorded with representative Woo modules.
-- [ ] No module performs an unbounded query during ordinary frontend requests.
+- [ ] No module performs an unbounded query during frontend requests.
 
 ## Release package
 
