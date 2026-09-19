@@ -30,6 +30,7 @@ The abilities layer is an adapter over the existing Site Suite registry, module 
 | `smg-site-suite/get-site-inventory` | Read runtime/theme/plugin/Site Suite inventory | Yes | No |
 | `smg-site-suite/get-database-table-sizes` | Read bounded database table size data | Yes | No |
 | `smg-site-suite/list-rewrite-rules` | Read bounded WordPress rewrite rules | Yes | No |
+| `smg-site-suite/get-site-health` | Read HTTPS/debug/indexing/WP-Cron health checks | Yes | No |
 
 All abilities declare typed input/output schemas and idempotency annotations.
 
@@ -78,5 +79,6 @@ Integration CI verifies:
 - redirect create/list/delete round-trips use local-only validation and idempotent deletion;
 - site inventory returns settings-free runtime/theme/plugin/module data;
 - database size and rewrite-rule abilities enforce bounded result limits;
+- site health returns four structured, non-sensitive production-readiness checks;
 - Protected Owner blocks another administrator from ability execution;
 - WordPress 6.5 minimum-runtime activation remains unaffected.
