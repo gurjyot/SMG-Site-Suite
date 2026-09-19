@@ -1,0 +1,213 @@
+<?php
+namespace SMG\SiteSuite\Modules\WooCommerce;
+
+use SMG\WPFoundation\Contracts\ActivatableModuleInterface;
+use SMG\WPFoundation\Contracts\SettingsModuleInterface;
+
+final class Wishlist implements SettingsModuleInterface, ActivatableModuleInterface {
+    private const OPTION='smg_site_suite_wishlist_settings';
+    private const PAGE_OPTION='smg_site_suite_wishlist_page_id';
+    private const USER_META='_smg_site_suite_wishlist';
+    private const SESSION_KEY='smg_site_suite_wishlist';
+
+    public function register():void{
+        add_action('wp_enqueue_scripts',[$this,'assets']);
+        add_action('woocommerce_after_add_to_cart_button',[$this,'singleButton'],25);
+        add_action('woocommerce_after_shop_loop_item',[$this,'loopButton'],20);
+        add_shortcode('smg_wishlist',[$this,'shortcode']);
+        add_action('wp_ajax_smg_site_suite_wishlist_toggle',[$this,'ajaxToggle']);
+        add_action('wp_ajax_nopriv_smg_site_suite_wishlist_toggle',[$this,'ajaxToggle']);
+        add_action('woocommerce_init',[$this,'mergeGuestIntoAccount']);
+        add_action('woocommerce_thankyou',[$this,'removePurchased'],20);
+    }
+
+    public function activate():void{
+        $pageId=(int)get_option(self::PAGE_OPTION,0);
+        if($pageId>0&&get_post_status($pageId))return;
+
+        $existing=get_page_by_path('wishlist');
+        if($existing instanceof \WP_Post){
+            update_option(self::PAGE_OPTION,$existing->ID,false);
+            return;
+        }
+
+        $pageId=wp_insert_post([
+            'post_title'=>__('Wishlist','smg-site-suite'),
+            'post_name'=>'wishlist',
+            'post_content'=>'[smg_wishlist]',
+            'post_status'=>'publish',
+            'post_type'=>'page',
+        ],true);
+
+        if(!is_wp_error($pageId))update_option(self::PAGE_OPTION,(int)$pageId,false);
+    }
+
+    public function settingsSchema():array{
+        return [
+            ['key'=>'button_text','type'=>'text','label'=>__('Button text','smg-site-suite'),'default'=>__('Wishlist','smg-site-suite')],
+            ['key'=>'remove_text','type'=>'text','label'=>__('Remove text','smg-site-suite'),'default'=>__('Remove from wishlist','smg-site-suite')],
+            ['key'=>'show_loop','type'=>'checkbox','label'=>__('Show button on product archives','smg-site-suite'),'default'=>true],
+            ['key'=>'auto_remove','type'=>'checkbox','label'=>__('Remove purchased products from wishlist','smg-site-suite'),'default'=>true],
+        ];
+    }
+
+    public function settings():array{
+        $value=get_option(self::OPTION,[
+            'button_text'=>__('Wishlist','smg-site-suite'),
+            'remove_text'=>__('Remove from wishlist','smg-site-suite'),
+            'show_loop'=>true,
+            'auto_remove'=>true,
+        ]);
+        return is_array($value)?$value:[];
+    }
+
+    public function saveSettings(array $input):void{
+        update_option(self::OPTION,[
+            'button_text'=>sanitize_text_field((string)($input['button_text']??__('Wishlist','smg-site-suite'))),
+            'remove_text'=>sanitize_text_field((string)($input['remove_text']??__('Remove from wishlist','smg-site-suite'))),
+            'show_loop'=>!empty($input['show_loop']),
+            'auto_remove'=>!empty($input['auto_remove']),
+        ],false);
+    }
+
+    public function assets():void{
+        $pageId=(int)get_option(self::PAGE_OPTION,0);
+        if(!is_woocommerce()&&!is_page($pageId))return;
+
+        wp_enqueue_style('smg-site-suite-wishlist',SMG_SITE_SUITE_URL.'assets/wishlist.css',[],SMG_SITE_SUITE_VERSION);
+        wp_enqueue_script('smg-site-suite-wishlist',SMG_SITE_SUITE_URL.'assets/wishlist.js',[],SMG_SITE_SUITE_VERSION,true);
+        wp_localize_script('smg-site-suite-wishlist','smgSiteSuiteWishlist',[
+            'ajaxUrl'=>admin_url('admin-ajax.php'),
+            'nonce'=>wp_create_nonce('smg_site_suite_wishlist'),
+            'items'=>$this->items(),
+            'addText'=>(string)($this->settings()['button_text']??__('Wishlist','smg-site-suite')),
+            'removeText'=>(string)($this->settings()['remove_text']??__('Remove from wishlist','smg-site-suite')),
+        ]);
+    }
+
+    public function singleButton():void{
+        global $product;
+        if($product instanceof \WC_Product)$this->button($product->get_id());
+    }
+
+    public function loopButton():void{
+        if(empty($this->settings()['show_loop']))return;
+        global $product;
+        if($product instanceof \WC_Product)$this->button($product->get_id());
+    }
+
+    private function button(int $productId):void{
+        if($productId<=0)return;
+        $active=in_array($productId,$this->items(),true);
+        $settings=$this->settings();
+        $text=$active?($settings['remove_text']??__('Remove from wishlist','smg-site-suite')):($settings['button_text']??__('Wishlist','smg-site-suite'));
+        echo '<button type="button" class="button smgss-wishlist-toggle'.($active?' is-active':'').'" data-product-id="'.esc_attr((string)$productId).'" aria-pressed="'.($active?'true':'false').'">'.esc_html((string)$text).'</button>';
+    }
+
+    public function ajaxToggle():void{
+        check_ajax_referer('smg_site_suite_wishlist','nonce');
+
+        $productId=isset($_POST['product_id'])?absint($_POST['product_id']):0;
+        $product=wc_get_product($productId);
+        if(!$product)wp_send_json_error(['message'=>__('Invalid product.','smg-site-suite')],400);
+
+        $items=$this->items();
+        $added=!in_array($productId,$items,true);
+
+        if($added)$items[]=$productId;
+        else $items=array_values(array_diff($items,[$productId]));
+
+        $items=$this->normalize($items);
+        $this->saveItems($items);
+
+        $settings=$this->settings();
+        wp_send_json_success([
+            'added'=>$added,
+            'count'=>count($items),
+            'items'=>$items,
+            'text'=>$added?(string)($settings['remove_text']??__('Remove from wishlist','smg-site-suite')):(string)($settings['button_text']??__('Wishlist','smg-site-suite')),
+        ]);
+    }
+
+    public function shortcode():string{
+        $ids=$this->items();
+        if($ids===[])return '<div class="smgss-wishlist-empty">'.esc_html__('Your wishlist is empty.','smg-site-suite').'</div>';
+
+        $products=wc_get_products(['include'=>$ids,'limit'=>-1,'status'=>'publish']);
+        $map=[];
+        foreach($products as $product)if($product instanceof \WC_Product)$map[$product->get_id()]=$product;
+
+        ob_start();
+        echo '<div class="smgss-wishlist-grid">';
+        foreach($ids as $id){
+            $product=$map[$id]??null;if(!$product)continue;
+            echo '<article class="smgss-wishlist-item" data-product-id="'.esc_attr((string)$id).'">';
+            echo '<a href="'.esc_url($product->get_permalink()).'" class="smgss-wishlist-image">'.$product->get_image('woocommerce_thumbnail').'</a>';
+            echo '<div class="smgss-wishlist-info"><h3><a href="'.esc_url($product->get_permalink()).'">'.esc_html($product->get_name()).'</a></h3>';
+            echo '<div class="smgss-wishlist-price">'.wp_kses_post($product->get_price_html()).'</div>';
+            echo '<a class="button" href="'.esc_url($product->add_to_cart_url()).'">'.esc_html($product->add_to_cart_text()).'</a> ';
+            echo '<button type="button" class="button smgss-wishlist-toggle is-active" data-product-id="'.esc_attr((string)$id).'" aria-pressed="true">'.esc_html((string)($this->settings()['remove_text']??__('Remove from wishlist','smg-site-suite'))).'</button></div></article>';
+        }
+        echo '</div>';
+        return (string)ob_get_clean();
+    }
+
+    public function mergeGuestIntoAccount():void{
+        if(!is_user_logged_in()||!WC()->session)return;
+        $guest=$this->sessionItems();
+        if($guest===[])return;
+
+        $userId=get_current_user_id();
+        $user=$this->normalize((array)get_user_meta($userId,self::USER_META,true));
+        update_user_meta($userId,self::USER_META,$this->normalize(array_merge($user,$guest)));
+        WC()->session->set(self::SESSION_KEY,[]);
+    }
+
+    public function removePurchased(int $orderId):void{
+        if(empty($this->settings()['auto_remove']))return;
+        $order=wc_get_order($orderId);if(!$order)return;
+
+        $purchased=[];
+        foreach($order->get_items('line_item') as $item){
+            if(!$item instanceof \WC_Order_Item_Product)continue;
+            $purchased[]=$item->get_variation_id()?:$item->get_product_id();
+            $purchased[]=$item->get_product_id();
+        }
+
+        $userId=(int)$order->get_customer_id();
+        if($userId>0){
+            $items=$this->normalize((array)get_user_meta($userId,self::USER_META,true));
+            update_user_meta($userId,self::USER_META,array_values(array_diff($items,$purchased)));
+        }elseif(WC()->session){
+            WC()->session->set(self::SESSION_KEY,array_values(array_diff($this->sessionItems(),$purchased)));
+        }
+    }
+
+    private function items():array{
+        if(is_user_logged_in()){
+            return $this->normalize((array)get_user_meta(get_current_user_id(),self::USER_META,true));
+        }
+        return $this->sessionItems();
+    }
+
+    private function sessionItems():array{
+        if(!WC()->session)return [];
+        return $this->normalize((array)WC()->session->get(self::SESSION_KEY,[]));
+    }
+
+    private function saveItems(array $items):void{
+        if(is_user_logged_in()){
+            update_user_meta(get_current_user_id(),self::USER_META,$items);
+            return;
+        }
+
+        if(WC()->session){
+            if(!WC()->session->has_session())WC()->session->set_customer_session_cookie(true);
+            WC()->session->set(self::SESSION_KEY,$items);
+        }
+    }
+
+    private function normalize(array $items):array{
+        return array_values(array_unique(array_filter(array_map('absint',$items))));
+    }
+}
