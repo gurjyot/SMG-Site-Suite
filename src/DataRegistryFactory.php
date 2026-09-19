@@ -51,6 +51,7 @@ final class DataRegistryFactory {
             ->register('custom-order-statuses','option','smg_site_suite_order_statuses','configuration')
             ->register('security-headers','option','smg_site_suite_security_headers','configuration')
             ->register('redirect-manager','option','smg_site_suite_redirects','configuration')
+            ->register('redirect-manager','option','smg_site_suite_redirect_stats','generated')
             ->register('404-tracker','option','smg_site_suite_404_log','generated')
             ->register('404-tracker','option','smg_site_suite_404_settings','configuration')
             ->register('admin-menu-organizer','option','smg_site_suite_admin_menu','configuration')
