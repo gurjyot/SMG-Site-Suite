@@ -49,6 +49,23 @@ use SMG\SiteSuite\Modules\Content\SearchPostsOnly;
 use SMG\SiteSuite\Modules\Content\DisableTexturize;
 use SMG\SiteSuite\Modules\Performance\RemoveRecentCommentsCss;
 use SMG\SiteSuite\Modules\Users\LoginLogoutRedirects;
+use SMG\SiteSuite\Modules\WooCommerce\CatalogMode;
+use SMG\SiteSuite\Modules\WooCommerce\WhatsappEnquiry;
+use SMG\SiteSuite\Modules\WooCommerce\QuantityRules;
+use SMG\SiteSuite\Modules\WooCommerce\ProductTabsControl;
+use SMG\SiteSuite\Modules\WooCommerce\AutoApplyCoupon;
+use SMG\SiteSuite\Modules\WooCommerce\ThankYouMessage;
+use SMG\SiteSuite\Modules\WooCommerce\RenamePaymentMethods;
+use SMG\SiteSuite\Modules\WooCommerce\RenameShippingMethods;
+use SMG\SiteSuite\Modules\WooCommerce\DirectCheckout;
+use SMG\SiteSuite\Modules\WooCommerce\CheckoutFieldControls;
+use SMG\SiteSuite\Modules\WooCommerce\DirectCheckoutLinks;
+use SMG\SiteSuite\Modules\WooCommerce\UrlCoupons;
+use SMG\SiteSuite\Modules\WooCommerce\CheckoutTextCustomizer;
+use SMG\SiteSuite\Modules\WooCommerce\WooAssetControl;
+use SMG\SiteSuite\Modules\WooCommerce\CartFragmentsControl;
+use SMG\SiteSuite\Modules\WooCommerce\MyAccountRedirects;
+use SMG\SiteSuite\Modules\WooCommerce\ProductPriceHistory;
 final class RegistryFactory {
     public static function make():ModuleRegistry{
         $r=(new ModuleRegistry())->addCategory('admin',__('Admin','smg-site-suite'))->addCategory('content',__('Content','smg-site-suite'))->addCategory('media',__('Media','smg-site-suite'))->addCategory('performance',__('Performance','smg-site-suite'))->addCategory('security',__('Security','smg-site-suite'))->addCategory('utilities',__('Utilities','smg-site-suite'))->addCategory('users',__('Users','smg-site-suite'))->addCategory('email',__('Email','smg-site-suite'))->addCategory('woocommerce',__('WooCommerce','smg-site-suite'));
@@ -108,6 +125,23 @@ final class RegistryFactory {
             ['shipping-progress','Free Shipping Progress Bar','Show customers how much more they need to spend to reach a configured free-shipping threshold.','woocommerce',ShippingProgressBar::class,['woocommerce','shipping','progress'],['frontend','ajax'],'low',false,['plugins'=>['woocommerce/woocommerce.php']]],
             ['fomo-sales-notifications','FOMO Sales Notifications','Cache up to 20 recent paid orders once daily and show lightweight randomized purchase notifications.','woocommerce',FomoSalesNotifications::class,['woocommerce','fomo','sales','notifications'],['all'],'medium',true,['plugins'=>['woocommerce/woocommerce.php']]],
             ['woocommerce-wishlist','Wishlist','Lightweight WooCommerce wishlist for guests and logged-in users with AJAX toggles, a wishlist page, and optional post-purchase removal.','woocommerce',Wishlist::class,['woocommerce','wishlist','favorites'],['all'],'medium',true,['plugins'=>['woocommerce/woocommerce.php']]],
+            ['catalog-mode','Catalog Mode','Disable purchasing globally or only for logged-out visitors, with optional price hiding.','woocommerce',CatalogMode::class,['woocommerce','catalog','purchasing'],['all'],'medium',true,['plugins'=>['woocommerce/woocommerce.php']]],
+            ['whatsapp-enquiry','WhatsApp Product Enquiry','Add lightweight WhatsApp enquiry buttons with product-aware message templates.','woocommerce',WhatsappEnquiry::class,['woocommerce','whatsapp','enquiry'],['frontend'],'low',true,['plugins'=>['woocommerce/woocommerce.php']]],
+            ['quantity-rules','Quantity Rules','Set global minimum, maximum, and step quantities for WooCommerce purchases.','woocommerce',QuantityRules::class,['woocommerce','quantity','cart'],['all'],'medium',true,['plugins'=>['woocommerce/woocommerce.php']]],
+            ['product-tabs-control','Product Tabs Control','Hide or rename standard WooCommerce product tabs.','woocommerce',ProductTabsControl::class,['woocommerce','product tabs','reviews'],['frontend'],'low',true,['plugins'=>['woocommerce/woocommerce.php']]],
+            ['auto-apply-coupon','Auto Apply Coupon','Automatically apply a configured WooCommerce coupon in cart and checkout.','woocommerce',AutoApplyCoupon::class,['woocommerce','coupon','discount'],['frontend','rest','ajax'],'medium',true,['plugins'=>['woocommerce/woocommerce.php']]],
+            ['thank-you-message','Thank-you Message','Display a custom message on the WooCommerce order received page.','woocommerce',ThankYouMessage::class,['woocommerce','thank you','order'],['frontend'],'low',true,['plugins'=>['woocommerce/woocommerce.php']]],
+            ['rename-payment-methods','Rename Payment Methods','Rename visible WooCommerce payment gateway titles without editing gateway plugins.','woocommerce',RenamePaymentMethods::class,['woocommerce','payment','gateway'],['frontend','ajax','rest'],'low',true,['plugins'=>['woocommerce/woocommerce.php']]],
+            ['rename-shipping-methods','Rename Shipping Methods','Rename shipping rates by method or rate instance ID.','woocommerce',RenameShippingMethods::class,['woocommerce','shipping','method'],['frontend','ajax','rest'],'low',true,['plugins'=>['woocommerce/woocommerce.php']]],
+            ['direct-checkout','Direct Checkout','Redirect ordinary add-to-cart actions directly to checkout.','woocommerce',DirectCheckout::class,['woocommerce','checkout','conversion'],['frontend','ajax'],'medium',true,['plugins'=>['woocommerce/woocommerce.php']]],
+            ['checkout-field-controls','Checkout Field Controls','Hide selected classic checkout fields and control billing phone requirement.','woocommerce',CheckoutFieldControls::class,['woocommerce','checkout','fields'],['frontend'],'medium',true,['plugins'=>['woocommerce/woocommerce.php']]],
+            ['direct-checkout-links','Direct Checkout Links','Generate campaign links that add a selected product and quantity, optionally clear the cart, and go straight to checkout.','woocommerce',DirectCheckoutLinks::class,['woocommerce','checkout','links','campaigns'],['all'],'medium',true,['plugins'=>['woocommerce/woocommerce.php']]],
+            ['url-coupons','URL Coupons','Apply WooCommerce coupons from a configurable URL parameter with optional cart or checkout redirect.','woocommerce',UrlCoupons::class,['woocommerce','coupon','url'],['frontend'],'medium',true,['plugins'=>['woocommerce/woocommerce.php']]],
+            ['checkout-text-customizer','Checkout Text Customizer','Customize classic checkout button text and selected field placeholders.','woocommerce',CheckoutTextCustomizer::class,['woocommerce','checkout','labels'],['frontend'],'low',true,['plugins'=>['woocommerce/woocommerce.php']]],
+            ['woo-asset-control','WooCommerce Asset Control','Unload selected WooCommerce styles and scripts on non-store pages.','woocommerce',WooAssetControl::class,['woocommerce','performance','assets'],['frontend'],'medium',true,['plugins'=>['woocommerce/woocommerce.php']]],
+            ['cart-fragments-control','Cart Fragments Control','Keep WooCommerce cart fragments only where needed, use defaults, or disable them.','woocommerce',CartFragmentsControl::class,['woocommerce','performance','fragments'],['frontend'],'medium',true,['plugins'=>['woocommerce/woocommerce.php']]],
+            ['my-account-redirects','My Account Redirects','Set optional WooCommerce login, registration, and logout destinations.','woocommerce',MyAccountRedirects::class,['woocommerce','account','redirect'],['all'],'medium',true,['plugins'=>['woocommerce/woocommerce.php']]],
+            ['product-price-history','Product Price History','Record recent WooCommerce regular and sale price changes in product meta and show them in product admin.','woocommerce',ProductPriceHistory::class,['woocommerce','price','history'],['admin'],'low',false,['plugins'=>['woocommerce/woocommerce.php']]],
         ];
         foreach($defs as [$slug,$name,$description,$category,$class,$tags,$contexts,$risk,$settings,$dependencies]){
             $r->register(new ModuleDefinition(['slug'=>$slug,'name'=>__($name,'smg-site-suite'),'description'=>__($description,'smg-site-suite'),'category'=>$category,'class'=>$class,'tags'=>$tags,'contexts'=>$contexts,'risk'=>$risk,'has_settings'=>$settings,'dependencies'=>$dependencies]));
