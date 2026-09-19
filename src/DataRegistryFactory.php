@@ -76,6 +76,8 @@ final class DataRegistryFactory {
             ->register('upload-size-limit','option','smg_site_suite_upload_size_limit','configuration')
             ->register('plugin-theme-notes','option','smg_site_suite_component_notes','user_data')
             ->register('critical-plugin-protection','option','smg_site_suite_critical_plugins','configuration')
+            ->register('plugin-update-freeze','option','smg_site_suite_frozen_plugins','configuration')
+            ->register('login-as-user','transient','smg_return_*','generated')
             ->register('estimated-delivery-message','option','smg_site_suite_delivery_message','configuration')
             ->register('custom-stock-messages','option','smg_site_suite_stock_messages','configuration')
             ->register('checkout-success-whatsapp','option','smg_site_suite_checkout_success_whatsapp','configuration')
