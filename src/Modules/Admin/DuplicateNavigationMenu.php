@@ -5,8 +5,12 @@ use SMG\WPFoundation\Contracts\ModuleInterface;
 
 final class DuplicateNavigationMenu implements ModuleInterface {
     public function register():void{
-        add_submenu_page('themes.php',__('Duplicate Menu','smg-site-suite'),__('Duplicate Menu','smg-site-suite'),'edit_theme_options','smg-site-suite-duplicate-menu',[$this,'render']);
+        add_action('admin_menu',[$this,'menu'],90);
         add_action('admin_post_smg_site_suite_duplicate_menu',[$this,'duplicate']);
+    }
+
+    public function menu():void{
+        add_submenu_page('themes.php',__('Duplicate Menu','smg-site-suite'),__('Duplicate Menu','smg-site-suite'),'edit_theme_options','smg-site-suite-duplicate-menu',[$this,'render']);
     }
 
     public function render():void{
@@ -55,7 +59,7 @@ final class DuplicateNavigationMenu implements ModuleInterface {
             if(!is_wp_error($newItem))$map[$item->ID]=$newItem;
         }
 
-        wp_safe_redirect(add_query_arg(['page'=>'nav-menus.php','menu'=>$newMenuId],admin_url()));
+        wp_safe_redirect(add_query_arg('menu',$newMenuId,admin_url('nav-menus.php')));
         exit;
     }
 }
