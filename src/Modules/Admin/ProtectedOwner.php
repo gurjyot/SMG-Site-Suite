@@ -24,6 +24,11 @@ final class ProtectedOwner implements ModuleInterface, ActivatableModuleInterfac
         add_filter('pre_update_option_active_plugins',[$this,'protectPluginActivation'],99,2);
     }
 
+    public static function isEnabled():bool{
+        $active=get_option('smg_site_suite_active_modules',[]);
+        return is_array($active)&&in_array('protected-owner',$active,true);
+    }
+
     public static function isProtectedCurrentUser():bool{
         if(!is_user_logged_in())return false;
         $owners=get_option(self::OPTION,[]);
