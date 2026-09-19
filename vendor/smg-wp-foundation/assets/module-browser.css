@@ -13,3 +13,7 @@ body.smg-foundation-drawer-open{overflow:hidden}.smg-foundation-card-copy{min-wi
 .smg-foundation-risk-medium{background:#fff8e5;color:#8a4b00}
 .smg-foundation-risk-high,.smg-foundation-risk-destructive{background:#fcf0f1;color:#8a2424}
 .smg-foundation-risk-filters{display:flex;gap:4px;flex-wrap:wrap}
+
+.smg-foundation-compat{display:inline-flex;align-items:center;border-radius:999px;padding:2px 7px;font-size:11px;line-height:1.4;background:#f0f6fc;color:#1d4f73}
+.smg-foundation-compat-classic-checkout{background:#fff8e5;color:#8a4b00}
+.smg-foundation-compat-store-api{background:#edfaef;color:#146c2e}
