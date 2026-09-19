@@ -1,5 +1,6 @@
 <?php
 namespace SMG\SiteSuite;
+use SMG\SiteSuite\Admin\ConfigurationsPage;
 use SMG\WPFoundation\Admin\ModuleBrowser;use SMG\WPFoundation\Modules\DependencyChecker;use SMG\WPFoundation\Modules\ModuleInstaller;use SMG\WPFoundation\Modules\ModuleLoader;use SMG\WPFoundation\Modules\ModuleManager;use SMG\WPFoundation\Modules\ModuleStateStore;
 final class Plugin {
     private static ?self $instance=null;
