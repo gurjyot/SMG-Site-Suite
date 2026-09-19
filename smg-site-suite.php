@@ -9,16 +9,14 @@
  * Requires PHP: 8.0
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+if(!defined('ABSPATH')){exit;}
 
-define( 'SMG_SITE_SUITE_VERSION', '0.1.0-dev' );
-define( 'SMG_SITE_SUITE_FILE', __FILE__ );
-define( 'SMG_SITE_SUITE_PATH', plugin_dir_path( __FILE__ ) );
-define( 'SMG_SITE_SUITE_URL', plugin_dir_url( __FILE__ ) );
+define('SMG_SITE_SUITE_VERSION','0.1.0-dev');
+define('SMG_SITE_SUITE_FILE',__FILE__);
+define('SMG_SITE_SUITE_PATH',plugin_dir_path(__FILE__));
+define('SMG_SITE_SUITE_URL',plugin_dir_url(__FILE__));
 
-require_once SMG_SITE_SUITE_PATH . 'includes/class-module-registry.php';
-require_once SMG_SITE_SUITE_PATH . 'includes/class-plugin.php';
+require_once SMG_SITE_SUITE_PATH.'includes/Autoloader.php';
+SMG\SiteSuite\Autoloader::register();
 
 SMG\SiteSuite\Plugin::instance()->boot();
