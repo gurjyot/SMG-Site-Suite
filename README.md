@@ -104,7 +104,7 @@ Highlights include:
 
 On WordPress 6.9 and newer, Site Suite registers WordPress Abilities for module discovery, activation/deactivation, settings management, system diagnostics, cron and 404 inspection, validated local redirect management, settings-free site inventory, database-size inspection, rewrite-rule diagnostics, Site Health checks, and built-in preset discovery/application. The abilities reuse existing Site Suite services, are available through the core Abilities REST API, and are marked for discovery by the official WordPress MCP Adapter.
 
-Protected Owner also applies to the agentic interface: when it is active, another administrator cannot operate Site Suite through an Ability.
+Protected Owner also applies to the agentic interface: when it is active, another administrator cannot operate Site Suite through an Ability. Sensitive settings such as passwords, tokens, secrets, and API keys are writable but redacted from agent responses.
 
 WordPress 6.5–6.8 remain supported; the agentic layer simply stays dormant because those versions do not include the Abilities API.
 

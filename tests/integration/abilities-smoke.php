@@ -95,6 +95,7 @@ $original404Log = get_option('smg_site_suite_404_log', null);
 $originalRedirects = get_option('smg_site_suite_redirects', null);
 $originalRedirectStats = get_option('smg_site_suite_redirect_stats', null);
 $originalRewriteRules = get_option('rewrite_rules', null);
+$originalSmtp = get_option('smg_site_suite_smtp', null);
 $createdUserIds = [];
 
 try {
@@ -161,6 +162,108 @@ try {
             $assert(
                 (int) ($updated['settings']['height'] ?? 0) === 4000,
                 'Settings ability bypassed module sanitization.'
+            );
+        }
+    }
+
+    if (
+        $getSettingsAbility instanceof WP_Ability
+        && $updateSettingsAbility instanceof WP_Ability
+    ) {
+        update_option(
+            'smg_site_suite_smtp',
+            [
+                'host' => 'smtp.example.test',
+                'port' => 587,
+                'encryption' => 'tls',
+                'username' => 'mailer@example.test',
+                'password' => 'super-secret-agent-test',
+                'auth' => true,
+            ],
+            false
+        );
+
+        $smtpSettings = $getSettingsAbility->execute(['slug' => 'smtp-mailer']);
+        $assert(!is_wp_error($smtpSettings), 'SMTP settings ability returned an error.');
+
+        if (is_array($smtpSettings)) {
+            $assert(
+                !array_key_exists('password', (array) ($smtpSettings['settings'] ?? [])),
+                'Agent settings response exposed the SMTP password.'
+            );
+            $assert(
+                in_array('password', (array) ($smtpSettings['redacted_fields'] ?? []), true),
+                'Agent settings response did not report the redacted SMTP password field.'
+            );
+            $encoded = wp_json_encode($smtpSettings);
+            $assert(
+                !is_string($encoded) || !str_contains($encoded, 'super-secret-agent-test'),
+                'SMTP password leaked elsewhere in the agent settings payload.'
+            );
+
+            $passwordSchema = array_values(array_filter(
+                (array) ($smtpSettings['schema'] ?? []),
+                static fn(array $field): bool => ($field['key'] ?? '') === 'password'
+            ));
+            $assert(
+                isset($passwordSchema[0])
+                    && ($passwordSchema[0]['sensitive'] ?? false) === true
+                    && !array_key_exists('default', $passwordSchema[0]),
+                'Sensitive SMTP schema field was not marked/redacted correctly.'
+            );
+        }
+
+        $updatedSmtp = $updateSettingsAbility->execute([
+            'slug' => 'smtp-mailer',
+            'settings' => [
+                'host' => 'smtp2.example.test',
+                'port' => 465,
+                'encryption' => 'ssl',
+                'username' => 'mailer@example.test',
+                'auth' => true,
+            ],
+        ]);
+        $assert(!is_wp_error($updatedSmtp), 'SMTP settings update ability returned an error.');
+
+        $storedSmtp = get_option('smg_site_suite_smtp', []);
+        $assert(
+            is_array($storedSmtp)
+                && ($storedSmtp['password'] ?? '') === 'super-secret-agent-test',
+            'Omitting the SMTP password through the agent settings ability erased the stored secret.'
+        );
+
+        if (is_array($updatedSmtp)) {
+            $assert(
+                !array_key_exists('password', (array) ($updatedSmtp['settings'] ?? [])),
+                'SMTP update response exposed the stored password.'
+            );
+        }
+
+        $rotatedSmtp = $updateSettingsAbility->execute([
+            'slug' => 'smtp-mailer',
+            'settings' => [
+                'host' => 'smtp2.example.test',
+                'port' => 465,
+                'encryption' => 'ssl',
+                'username' => 'mailer@example.test',
+                'password' => 'rotated-agent-secret',
+                'auth' => true,
+            ],
+        ]);
+        $assert(!is_wp_error($rotatedSmtp), 'SMTP password rotation through ability failed.');
+
+        $storedSmtp = get_option('smg_site_suite_smtp', []);
+        $assert(
+            is_array($storedSmtp)
+                && ($storedSmtp['password'] ?? '') === 'rotated-agent-secret',
+            'SMTP password rotation was not persisted.'
+        );
+
+        if (is_array($rotatedSmtp)) {
+            $encoded = wp_json_encode($rotatedSmtp);
+            $assert(
+                !is_string($encoded) || !str_contains($encoded, 'rotated-agent-secret'),
+                'Rotated SMTP password leaked in the ability response.'
             );
         }
     }
@@ -529,6 +632,7 @@ try {
     $restore('smg_site_suite_redirects', $originalRedirects);
     $restore('smg_site_suite_redirect_stats', $originalRedirectStats);
     $restore('rewrite_rules', $originalRewriteRules);
+    $restore('smg_site_suite_smtp', $originalSmtp);
 
     foreach ($createdUserIds as $userId) {
         wp_delete_user($userId);
