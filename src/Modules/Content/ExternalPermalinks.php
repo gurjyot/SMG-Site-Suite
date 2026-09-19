@@ -28,7 +28,9 @@ final class ExternalPermalinks implements ModuleInterface {
     public function save(int $postId):void{
         if(!isset($_POST['smg_site_suite_external_permalink_nonce'])||!wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['smg_site_suite_external_permalink_nonce'])),'smg_site_suite_external_permalink_'.$postId))return;
         if(!current_user_can('edit_post',$postId))return;
-        $url=esc_url_raw((string)($_POST['smg_external_permalink']??''));
+        $url=isset($_POST['smg_external_permalink'])
+            ? esc_url_raw(wp_unslash($_POST['smg_external_permalink']))
+            : '';
         if($url==='')delete_post_meta($postId,self::META);else update_post_meta($postId,self::META,$url);
     }
 
