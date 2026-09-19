@@ -114,7 +114,7 @@ final class ProtectedOwner implements ModuleInterface, ActivatableModuleInterfac
         $admins=get_users(['role'=>'administrator','orderby'=>'user_email','order'=>'ASC']);
 
         echo '<div class="wrap"><h1>'.esc_html__('Protected Owners','smg-site-suite').'</h1>';
-        echo '<p>'.esc_html__('Protected owners bypass Site Suite admin-menu restrictions and cannot be edited, demoted, removed, or deleted by ordinary administrators. Keep at least one protected owner.','smg-site-suite').'</p>';
+        echo '<p>'.esc_html__('Protected owners bypass Site Suite admin-menu restrictions and cannot be edited, demoted, removed, or deleted by other administrators. Keep at least one protected owner.','smg-site-suite').'</p>';
         echo '<form method="post" action="'.esc_url(admin_url('admin-post.php')).'"><input type="hidden" name="action" value="smg_site_suite_save_protected_owners">';
         wp_nonce_field('smg_site_suite_save_protected_owners');
         echo '<table class="widefat striped" style="max-width:850px"><thead><tr><th>'.esc_html__('Protected','smg-site-suite').'</th><th>'.esc_html__('Administrator','smg-site-suite').'</th><th>'.esc_html__('Email','smg-site-suite').'</th></tr></thead><tbody>';
