@@ -106,6 +106,9 @@ use SMG\SiteSuite\Modules\Media\MediaCategories;
 use SMG\SiteSuite\Modules\Media\MediaDetailsColumns;
 use SMG\SiteSuite\Modules\Admin\DebugLogViewer;
 use SMG\SiteSuite\Modules\Content\InternalContentNotes;
+use SMG\SiteSuite\Modules\Content\RequireFeaturedImage;
+use SMG\SiteSuite\Modules\Admin\ContentMetricsColumns;
+use SMG\SiteSuite\Modules\Media\UploadSizeLimit;
 final class RegistryFactory {
     public static function make():ModuleRegistry{
         $r=(new ModuleRegistry())->addCategory('admin',__('Admin','smg-site-suite'))->addCategory('content',__('Content','smg-site-suite'))->addCategory('media',__('Media','smg-site-suite'))->addCategory('performance',__('Performance','smg-site-suite'))->addCategory('security',__('Security','smg-site-suite'))->addCategory('utilities',__('Utilities','smg-site-suite'))->addCategory('users',__('Users','smg-site-suite'))->addCategory('email',__('Email','smg-site-suite'))->addCategory('woocommerce',__('WooCommerce','smg-site-suite'));
@@ -214,6 +217,9 @@ final class RegistryFactory {
             ['media-details-columns','Media Details Columns','Show image dimensions and file sizes in the Media Library list view.','media',MediaDetailsColumns::class,['media','dimensions','filesize'],['admin'],'low',false,[]],
             ['debug-log-viewer','Debug Log Viewer','Read the latest WordPress debug.log lines from a protected admin-only screen.','admin',DebugLogViewer::class,['debug','logs','diagnostics'],['admin'],'medium',false,[]],
             ['internal-content-notes','Internal Content Notes','Attach private admin-only notes to posts, pages, and other editable content.','content',InternalContentNotes::class,['notes','content','admin'],['admin'],'low',false,[]],
+            ['require-featured-image','Require Featured Image','Prevent selected post types from publishing without a featured image.','content',RequireFeaturedImage::class,['featured image','editorial','publish'],['admin'],'medium',true,[]],
+            ['content-metrics-columns','Content Metrics Columns','Show word count and last-modified time in editable content list tables.','admin',ContentMetricsColumns::class,['content','columns','word count'],['admin'],'low',false,[]],
+            ['upload-size-limit','Upload Size Limit','Apply an optional Site Suite maximum upload size below the server limit.','media',UploadSizeLimit::class,['media','upload','limit'],['admin','ajax','rest'],'low',true,[]],
             ['auto-update-email-controls','Auto-Update Email Controls','Optionally suppress WordPress core, plugin, and theme automatic update notification emails.','email',AutoUpdateEmailControls::class,['email','updates','notifications'],['all'],'low',true,[]],
             ['sanitize-upload-filenames','Sanitize Upload Filenames','Normalize new upload filenames to lowercase ASCII kebab-case.','media',SanitizeUploadFilenames::class,['media','filenames','uploads'],['admin','ajax','rest'],'low',false,[]],
             ['temporary-login','Temporary Login','Create one-use expiring administrator access links for support or development.','users',TemporaryLogin::class,['temporary login','support','access'],['all'],'high',false,[]],
