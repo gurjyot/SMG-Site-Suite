@@ -43,7 +43,7 @@ try{
     // Dependency detection must fail cleanly when WooCommerce is not active.
     $withoutWoo=array_values(array_diff($originalPlugins,['woocommerce/woocommerce.php']));
     update_option('active_plugins',$withoutWoo,false);
-    $status=$manager->status('wishlist');
+    $status=$manager->status('woocommerce-wishlist');
     $assert($status['known']===true,'Wishlist module missing from registry.');
     $assert($status['available']===false,'Woo dependency unexpectedly reported available.');
     $assert(in_array('plugin:woocommerce/woocommerce.php',(array)$status['missing'],true),'Woo dependency failure was not reported.');
@@ -85,13 +85,13 @@ try{
     delete_option('smg_site_suite_wishlist_page_id');
     $existing=get_page_by_path('wishlist');
     $existingId=$existing instanceof WP_Post?(int)$existing->ID:0;
-    $manager->activate('wishlist');
+    $manager->activate('woocommerce-wishlist');
     $wishlistPageId=(int)get_option('smg_site_suite_wishlist_page_id',0);
     $assert($wishlistPageId>0,'Wishlist activation did not store a Wishlist page ID.');
     $assert(get_post_status($wishlistPageId)==='publish','Wishlist page is not published.');
     $assert(str_contains((string)get_post_field('post_content',$wishlistPageId),'[smg_wishlist]'),'Wishlist page does not contain the expected shortcode.');
     if($existingId===0&&$wishlistPageId>0)$createdPageIds[]=$wishlistPageId;
-    $manager->deactivate('wishlist');
+    $manager->deactivate('woocommerce-wishlist');
 
     // FOMO activation/deactivation should manage exactly its scheduled refresh event.
     wp_clear_scheduled_hook('smg_site_suite_fomo_refresh');
