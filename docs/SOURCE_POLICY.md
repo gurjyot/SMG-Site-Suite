@@ -14,3 +14,4 @@ When adding or changing a module:
 - prefer a small amount of useful code over generic abstractions or explanatory comments.
 
 Common WordPress hook names and API calls will naturally appear in many plugins. The surrounding implementation should still be our own.
+Before a release candidate is tagged, compare the packaged plugin against any reference plugins used during development. Investigate meaningful overlaps; shared WordPress/WooCommerce API names and signatures are expected, copied implementation is not.
