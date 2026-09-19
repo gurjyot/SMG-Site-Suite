@@ -24,12 +24,15 @@ Site Suite bundles SMG WP Foundation internally. There is no separate Foundation
 - Performance Basics
 - Admin Productivity
 - Woo Store Basics
+- Agency Client Handoff
+
+The Agency Client Handoff preset enables the protected-owner, admin-menu, custom-dashboard, branding, dashboard-cleanup, environment, and activity-log tools used for managed client sites.
 
 Presets are additive: they enable useful modules without wiping unrelated active modules or their settings.
 
 ## Current catalog
 
-**55 modules** across Admin, Content, Media, Performance, Security, Utilities, Users, and WooCommerce.
+**101 modules** across Admin, Content, Media, Performance, Security, Utilities, Users, and WooCommerce.
 
 Highlights include:
 
@@ -59,6 +62,20 @@ Highlights include:
 - Search Visibility Warning
 - Last Login Column
 - Registration Date Column
+- Protected Owner
+- Visual Admin Menu Organizer
+- Custom Dashboard Page
+- Temporary Login management
+- Multiple User Roles
+- Disable User Account
+- Environment Indicator
+- Cron Viewer
+- Database Table Sizes
+- Replace Media
+- Default Featured Image
+- SMTP Test Email
+- Redirect-from-404 workflow
+- Duplicate Navigation Menu
 - Recover Missed Scheduled Posts
 - Disable Big Image Scaling
 - Disable Self Pingbacks
