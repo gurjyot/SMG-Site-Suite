@@ -38,6 +38,12 @@ $abilityNames = [
     'smg-site-suite/deactivate-module',
     'smg-site-suite/get-module-settings',
     'smg-site-suite/update-module-settings',
+    'smg-site-suite/get-system-summary',
+    'smg-site-suite/list-cron-events',
+    'smg-site-suite/list-404s',
+    'smg-site-suite/list-redirects',
+    'smg-site-suite/upsert-redirect',
+    'smg-site-suite/delete-redirect',
 ];
 
 foreach ($abilityNames as $name) {
@@ -46,8 +52,14 @@ foreach ($abilityNames as $name) {
 
     if ($ability instanceof WP_Ability) {
         $meta = $ability->get_meta();
-        $assert(($meta['show_in_rest'] ?? false) === true, "Ability is not REST-visible: {$name}");
-        $assert(($meta['mcp']['public'] ?? false) === true, "Ability is not MCP-public: {$name}");
+        $assert(
+            ($meta['show_in_rest'] ?? false) === true,
+            "Ability is not REST-visible: {$name}"
+        );
+        $assert(
+            ($meta['mcp']['public'] ?? false) === true,
+            "Ability is not MCP-public: {$name}"
+        );
     }
 }
 
@@ -57,10 +69,19 @@ $activateAbility = wp_get_ability('smg-site-suite/activate-module');
 $deactivateAbility = wp_get_ability('smg-site-suite/deactivate-module');
 $getSettingsAbility = wp_get_ability('smg-site-suite/get-module-settings');
 $updateSettingsAbility = wp_get_ability('smg-site-suite/update-module-settings');
+$systemSummaryAbility = wp_get_ability('smg-site-suite/get-system-summary');
+$cronAbility = wp_get_ability('smg-site-suite/list-cron-events');
+$notFoundAbility = wp_get_ability('smg-site-suite/list-404s');
+$listRedirectsAbility = wp_get_ability('smg-site-suite/list-redirects');
+$upsertRedirectAbility = wp_get_ability('smg-site-suite/upsert-redirect');
+$deleteRedirectAbility = wp_get_ability('smg-site-suite/delete-redirect');
 
 $originalActive = (array) get_option('smg_site_suite_active_modules', []);
 $originalDashboard = get_option('smg_site_suite_custom_dashboard', null);
 $originalOwners = get_option('smg_site_suite_protected_owners', null);
+$original404Log = get_option('smg_site_suite_404_log', null);
+$originalRedirects = get_option('smg_site_suite_redirects', null);
+$originalRedirectStats = get_option('smg_site_suite_redirect_stats', null);
 $createdUserIds = [];
 
 try {
@@ -68,7 +89,10 @@ try {
         $result = $listAbility->execute([]);
         $assert(!is_wp_error($result), 'List modules ability returned an error.');
         if (is_array($result)) {
-            $assert(($result['count'] ?? 0) >= 135, 'List modules ability returned fewer than 135 modules.');
+            $assert(
+                ($result['count'] ?? 0) >= 135,
+                'List modules ability returned fewer than 135 modules.'
+            );
         }
     }
 
@@ -87,14 +111,22 @@ try {
         $activate = $activateAbility->execute(['slug' => 'reading-time']);
         $assert(!is_wp_error($activate), 'Activate module ability returned an error.');
         $assert(
-            in_array('reading-time', (array) get_option('smg_site_suite_active_modules', []), true),
+            in_array(
+                'reading-time',
+                (array) get_option('smg_site_suite_active_modules', []),
+                true
+            ),
             'Activate module ability did not persist active state.'
         );
 
         $deactivate = $deactivateAbility->execute(['slug' => 'reading-time']);
         $assert(!is_wp_error($deactivate), 'Deactivate module ability returned an error.');
         $assert(
-            !in_array('reading-time', (array) get_option('smg_site_suite_active_modules', []), true),
+            !in_array(
+                'reading-time',
+                (array) get_option('smg_site_suite_active_modules', []),
+                true
+            ),
             'Deactivate module ability did not persist inactive state.'
         );
     }
@@ -116,6 +148,148 @@ try {
             $assert(
                 (int) ($updated['settings']['height'] ?? 0) === 4000,
                 'Settings ability bypassed module sanitization.'
+            );
+        }
+    }
+
+    if ($systemSummaryAbility instanceof WP_Ability) {
+        $blocked = $systemSummaryAbility->execute([]);
+        $assert(
+            is_wp_error($blocked)
+                && $blocked->get_error_code() === 'smg_site_suite_module_inactive',
+            'System summary ability did not require its module to be active.'
+        );
+    }
+
+    if ($activateAbility instanceof WP_Ability) {
+        foreach (['system-summary', 'cron-viewer', '404-tracker', 'redirect-manager'] as $slug) {
+            $activated = $activateAbility->execute(['slug' => $slug]);
+            $assert(!is_wp_error($activated), "Could not activate operational module: {$slug}");
+        }
+    }
+
+    if ($systemSummaryAbility instanceof WP_Ability) {
+        $summary = $systemSummaryAbility->execute([]);
+        $assert(!is_wp_error($summary), 'System summary ability returned an error.');
+        if (is_array($summary)) {
+            $assert(
+                ($summary['wordpress_version'] ?? '') !== '',
+                'System summary did not return the WordPress version.'
+            );
+            $assert(
+                ($summary['site_url'] ?? '') === site_url(),
+                'System summary returned the wrong site URL.'
+            );
+        }
+    }
+
+    if ($cronAbility instanceof WP_Ability) {
+        $cron = $cronAbility->execute(['limit' => 25]);
+        $assert(!is_wp_error($cron), 'Cron ability returned an error.');
+        if (is_array($cron)) {
+            $assert(
+                ($cron['count'] ?? -1) <= 25,
+                'Cron ability ignored its result limit.'
+            );
+        }
+    }
+
+    update_option(
+        'smg_site_suite_404_log',
+        [
+            md5('http://smg.test/missing-page') => [
+                'url' => 'http://smg.test/missing-page',
+                'count' => 4,
+                'last' => time(),
+                'referer' => 'http://smg.test/source',
+            ],
+        ],
+        false
+    );
+
+    if ($notFoundAbility instanceof WP_Ability) {
+        $notFound = $notFoundAbility->execute(['limit' => 10, 'search' => 'missing']);
+        $assert(!is_wp_error($notFound), '404 listing ability returned an error.');
+        if (is_array($notFound)) {
+            $assert(
+                ($notFound['count'] ?? 0) === 1,
+                '404 listing ability did not return the seeded entry.'
+            );
+            $assert(
+                ($notFound['entries'][0]['path'] ?? '') === '/missing-page',
+                '404 listing ability returned the wrong path.'
+            );
+        }
+    }
+
+    if ($upsertRedirectAbility instanceof WP_Ability) {
+        $external = $upsertRedirectAbility->execute([
+            'from' => '/bad',
+            'to' => 'https://example.com/',
+            'code' => 301,
+        ]);
+        $assert(
+            is_wp_error($external),
+            'Redirect ability accepted an external destination.'
+        );
+
+        $loop = $upsertRedirectAbility->execute([
+            'from' => '/same',
+            'to' => '/same',
+            'code' => 301,
+        ]);
+        $assert(
+            is_wp_error($loop),
+            'Redirect ability accepted a direct redirect loop.'
+        );
+
+        $created = $upsertRedirectAbility->execute([
+            'from' => '/old-page',
+            'to' => '/new-page',
+            'code' => 308,
+        ]);
+        $assert(!is_wp_error($created), 'Redirect upsert ability returned an error.');
+        if (is_array($created)) {
+            $assert(
+                ($created['code'] ?? 0) === 308,
+                'Redirect upsert ability did not preserve the requested code.'
+            );
+        }
+    }
+
+    if ($listRedirectsAbility instanceof WP_Ability) {
+        $redirects = $listRedirectsAbility->execute([]);
+        $assert(!is_wp_error($redirects), 'Redirect listing ability returned an error.');
+        if (is_array($redirects)) {
+            $matching = array_values(array_filter(
+                (array) ($redirects['rules'] ?? []),
+                static fn(array $row): bool => ($row['from'] ?? '') === '/old-page'
+            ));
+            $assert(
+                count($matching) === 1
+                    && ($matching[0]['to'] ?? '') === '/new-page'
+                    && ($matching[0]['code'] ?? 0) === 308,
+                'Redirect listing ability did not return the created rule.'
+            );
+        }
+    }
+
+    if ($deleteRedirectAbility instanceof WP_Ability) {
+        $deleted = $deleteRedirectAbility->execute(['from' => '/old-page']);
+        $assert(!is_wp_error($deleted), 'Redirect delete ability returned an error.');
+        if (is_array($deleted)) {
+            $assert(
+                ($deleted['deleted'] ?? false) === true,
+                'Redirect delete ability did not report deletion.'
+            );
+        }
+
+        $deletedAgain = $deleteRedirectAbility->execute(['from' => '/old-page']);
+        $assert(!is_wp_error($deletedAgain), 'Repeated redirect deletion returned an error.');
+        if (is_array($deletedAgain)) {
+            $assert(
+                ($deletedAgain['deleted'] ?? true) === false,
+                'Repeated redirect deletion was not idempotent.'
             );
         }
     }
@@ -152,23 +326,37 @@ try {
                     'Protected Owner did not block Site Suite ability access for another administrator.'
                 );
             }
+
+            if ($upsertRedirectAbility instanceof WP_Ability) {
+                $blockedWrite = $upsertRedirectAbility->execute([
+                    'from' => '/blocked',
+                    'to' => '/target',
+                    'code' => 301,
+                ]);
+                $assert(
+                    is_wp_error($blockedWrite),
+                    'Protected Owner did not block a mutating operational ability.'
+                );
+            }
         }
     }
 } finally {
     wp_set_current_user($admin->ID);
     update_option('smg_site_suite_active_modules', $originalActive, false);
 
-    if ($originalDashboard === null) {
-        delete_option('smg_site_suite_custom_dashboard');
-    } else {
-        update_option('smg_site_suite_custom_dashboard', $originalDashboard, false);
-    }
+    $restore = static function (string $option, $value): void {
+        if ($value === null) {
+            delete_option($option);
+            return;
+        }
+        update_option($option, $value, false);
+    };
 
-    if ($originalOwners === null) {
-        delete_option('smg_site_suite_protected_owners');
-    } else {
-        update_option('smg_site_suite_protected_owners', $originalOwners, false);
-    }
+    $restore('smg_site_suite_custom_dashboard', $originalDashboard);
+    $restore('smg_site_suite_protected_owners', $originalOwners);
+    $restore('smg_site_suite_404_log', $original404Log);
+    $restore('smg_site_suite_redirects', $originalRedirects);
+    $restore('smg_site_suite_redirect_stats', $originalRedirectStats);
 
     foreach ($createdUserIds as $userId) {
         wp_delete_user($userId);
