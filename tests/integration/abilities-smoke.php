@@ -44,6 +44,9 @@ $abilityNames = [
     'smg-site-suite/list-redirects',
     'smg-site-suite/upsert-redirect',
     'smg-site-suite/delete-redirect',
+    'smg-site-suite/get-site-inventory',
+    'smg-site-suite/get-database-table-sizes',
+    'smg-site-suite/list-rewrite-rules',
 ];
 
 foreach ($abilityNames as $name) {
@@ -75,6 +78,9 @@ $notFoundAbility = wp_get_ability('smg-site-suite/list-404s');
 $listRedirectsAbility = wp_get_ability('smg-site-suite/list-redirects');
 $upsertRedirectAbility = wp_get_ability('smg-site-suite/upsert-redirect');
 $deleteRedirectAbility = wp_get_ability('smg-site-suite/delete-redirect');
+$siteInventoryAbility = wp_get_ability('smg-site-suite/get-site-inventory');
+$databaseSizesAbility = wp_get_ability('smg-site-suite/get-database-table-sizes');
+$rewriteRulesAbility = wp_get_ability('smg-site-suite/list-rewrite-rules');
 
 $originalActive = (array) get_option('smg_site_suite_active_modules', []);
 $originalDashboard = get_option('smg_site_suite_custom_dashboard', null);
@@ -82,6 +88,7 @@ $originalOwners = get_option('smg_site_suite_protected_owners', null);
 $original404Log = get_option('smg_site_suite_404_log', null);
 $originalRedirects = get_option('smg_site_suite_redirects', null);
 $originalRedirectStats = get_option('smg_site_suite_redirect_stats', null);
+$originalRewriteRules = get_option('rewrite_rules', null);
 $createdUserIds = [];
 
 try {
@@ -162,7 +169,15 @@ try {
     }
 
     if ($activateAbility instanceof WP_Ability) {
-        foreach (['system-summary', 'cron-viewer', '404-tracker', 'redirect-manager'] as $slug) {
+        foreach ([
+            'system-summary',
+            'cron-viewer',
+            '404-tracker',
+            'redirect-manager',
+            'site-inventory-export',
+            'database-table-sizes',
+            'rewrite-rules-viewer',
+        ] as $slug) {
             $activated = $activateAbility->execute(['slug' => $slug]);
             $assert(!is_wp_error($activated), "Could not activate operational module: {$slug}");
         }
@@ -294,6 +309,71 @@ try {
         }
     }
 
+    if ($siteInventoryAbility instanceof WP_Ability) {
+        $inventory = $siteInventoryAbility->execute([]);
+        $assert(!is_wp_error($inventory), 'Site inventory ability returned an error.');
+        if (is_array($inventory)) {
+            $assert(
+                ($inventory['runtime']['wordpress'] ?? '') !== '',
+                'Site inventory did not return the WordPress version.'
+            );
+            $assert(
+                isset($inventory['plugins']) && is_array($inventory['plugins']),
+                'Site inventory did not return a plugin list.'
+            );
+            $assert(
+                ($inventory['site_suite']['version'] ?? '') === SMG_SITE_SUITE_VERSION,
+                'Site inventory returned the wrong Site Suite version.'
+            );
+        }
+    }
+
+    if ($databaseSizesAbility instanceof WP_Ability) {
+        $databaseSizes = $databaseSizesAbility->execute(['limit' => 10]);
+        $assert(!is_wp_error($databaseSizes), 'Database sizes ability returned an error.');
+        if (is_array($databaseSizes)) {
+            $assert(
+                ($databaseSizes['count'] ?? -1) <= 10,
+                'Database sizes ability ignored its result limit.'
+            );
+            $assert(
+                ($databaseSizes['total_bytes'] ?? -1) >= 0,
+                'Database sizes ability returned an invalid total.'
+            );
+        }
+    }
+
+    update_option(
+        'rewrite_rules',
+        [
+            '^smg-agent-test/?$' => 'index.php?pagename=smg-agent-test',
+            '^unrelated/?$' => 'index.php?pagename=unrelated',
+        ],
+        false
+    );
+
+    if ($rewriteRulesAbility instanceof WP_Ability) {
+        $rewriteRules = $rewriteRulesAbility->execute([
+            'limit' => 10,
+            'search' => 'smg-agent-test',
+        ]);
+        $assert(!is_wp_error($rewriteRules), 'Rewrite rules ability returned an error.');
+        if (is_array($rewriteRules)) {
+            $assert(
+                ($rewriteRules['stored_count'] ?? 0) === 2,
+                'Rewrite rules ability returned the wrong stored rule count.'
+            );
+            $assert(
+                ($rewriteRules['count'] ?? 0) === 1,
+                'Rewrite rules ability search did not filter to one rule.'
+            );
+            $assert(
+                ($rewriteRules['rules'][0]['pattern'] ?? '') === '^smg-agent-test/?$',
+                'Rewrite rules ability returned the wrong pattern.'
+            );
+        }
+    }
+
     $protected = new \SMG\SiteSuite\Modules\Admin\ProtectedOwner();
     $protected->activate();
     $active = (array) get_option('smg_site_suite_active_modules', []);
@@ -357,6 +437,7 @@ try {
     $restore('smg_site_suite_404_log', $original404Log);
     $restore('smg_site_suite_redirects', $originalRedirects);
     $restore('smg_site_suite_redirect_stats', $originalRedirectStats);
+    $restore('rewrite_rules', $originalRewriteRules);
 
     foreach ($createdUserIds as $userId) {
         wp_delete_user($userId);
