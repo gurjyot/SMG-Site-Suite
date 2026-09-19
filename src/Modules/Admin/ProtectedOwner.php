@@ -99,12 +99,16 @@ final class ProtectedOwner implements ModuleInterface, ActivatableModuleInterfac
 
     public function protectPluginActivation($new,$old){
         if(self::isProtectedCurrentUser()||!is_admin()||!is_user_logged_in())return $new;
-        $action=isset($_REQUEST['action'])?sanitize_key(wp_unslash($_REQUEST['action'])):'';
-        if(!in_array($action,['deactivate','deactivate-selected'],true))return $new;
+        if(!in_array($this->requestedPluginAction(),['deactivate','deactivate-selected'],true))return $new;
         $plugin=plugin_basename(SMG_SITE_SUITE_FILE);
         $oldList=is_array($old)?$old:[];$newList=is_array($new)?$new:[];
         if(in_array($plugin,$oldList,true)&&!in_array($plugin,$newList,true))$newList[]=$plugin;
         return array_values(array_unique($newList));
+    }
+
+    private function requestedPluginAction():string{
+        $value=$_REQUEST['action']??'';
+        return is_string($value)?sanitize_key(wp_unslash($value)):'';
     }
 
     public function render():void{
