@@ -144,6 +144,42 @@
     if (event.key === 'Escape' && drawer && !drawer.hidden) closeDrawer();
   });
 
+  root.addEventListener('click', (event) => {
+    const selectButton = event.target.closest('.smg-foundation-media-select');
+    if (selectButton && window.wp?.media) {
+      event.preventDefault();
+      const target = document.getElementById(selectButton.dataset.target || '');
+      if (!target) return;
+      const frame = wp.media({ title: 'Choose Media', multiple: false, library: { type: 'image' } });
+      frame.on('select', () => {
+        const attachment = frame.state().get('selection').first()?.toJSON();
+        if (!attachment) return;
+        target.value = attachment.id || '';
+        const field = selectButton.closest('.smg-foundation-media-field');
+        let preview = field?.querySelector('img');
+        if (!preview && field) {
+          preview = document.createElement('img');
+          preview.style.maxWidth = '80px';
+          preview.style.height = 'auto';
+          preview.style.display = 'block';
+          preview.style.marginBottom = '8px';
+          field.prepend(preview);
+        }
+        if (preview) preview.src = attachment.sizes?.thumbnail?.url || attachment.url || '';
+      });
+      frame.open();
+      return;
+    }
+
+    const clearButton = event.target.closest('.smg-foundation-media-clear');
+    if (clearButton) {
+      event.preventDefault();
+      const target = document.getElementById(clearButton.dataset.target || '');
+      if (target) target.value = '';
+      clearButton.closest('.smg-foundation-media-field')?.querySelector('img')?.remove();
+    }
+  });
+
   drawerForm?.addEventListener('submit', async (event) => {
     event.preventDefault();
     const submit = drawerForm.querySelector('button[type="submit"]');
