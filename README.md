@@ -100,6 +100,16 @@ Highlights include:
 - FOMO Sales Notifications
 - WooCommerce Wishlist
 
+## Agentic interface
+
+On WordPress 6.9 and newer, Site Suite registers WordPress Abilities for module discovery, activation/deactivation, and settings management. The abilities reuse the existing ModuleManager and settings contracts, are available through the core Abilities REST API, and are marked for discovery by the official WordPress MCP Adapter.
+
+Protected Owner also applies to the agentic interface: when it is active, another administrator cannot operate Site Suite through an Ability.
+
+WordPress 6.5–6.8 remain supported; the agentic layer simply stays dormant because those versions do not include the Abilities API.
+
+See [Agentic Readiness](docs/AGENTIC_READINESS.md).
+
 ## FOMO performance model
 
 FOMO does not query orders during visitor requests. It snapshots up to 20 recent paid orders once daily via WP-Cron, stores the compact data in a non-autoloaded option, and randomizes display order in the browser.
