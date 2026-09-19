@@ -15,6 +15,7 @@ final class Wishlist implements SettingsModuleInterface, ActivatableModuleInterf
         add_action('woocommerce_after_add_to_cart_button',[$this,'singleButton'],25);
         add_action('woocommerce_after_shop_loop_item',[$this,'loopButton'],20);
         add_shortcode('smg_wishlist',[$this,'shortcode']);
+        add_shortcode('smg_wishlist_count',[$this,'countShortcode']);
         add_action('wp_ajax_smg_site_suite_wishlist_toggle',[$this,'ajaxToggle']);
         add_action('wp_ajax_nopriv_smg_site_suite_wishlist_toggle',[$this,'ajaxToggle']);
         add_action('woocommerce_init',[$this,'mergeGuestIntoAccount']);
@@ -129,8 +130,14 @@ final class Wishlist implements SettingsModuleInterface, ActivatableModuleInterf
         ]);
     }
 
+    public function countShortcode():string{
+        return (string)count($this->items());
+    }
+
     public function shortcode():string{
-        $ids=$this->items();
+        $shared=$this->sharedItems();
+        $ids=$shared!==null?$shared:$this->items();
+        $readOnly=$shared!==null;
         if($ids===[])return '<div class="smgss-wishlist-empty">'.esc_html__('Your wishlist is empty.','smg-site-suite').'</div>';
 
         $products=wc_get_products(['include'=>$ids,'limit'=>-1,'status'=>'publish']);
@@ -138,17 +145,26 @@ final class Wishlist implements SettingsModuleInterface, ActivatableModuleInterf
         foreach($products as $product)if($product instanceof \WC_Product)$map[$product->get_id()]=$product;
 
         ob_start();
-        echo '<div class="smgss-wishlist-grid">';
+        $subtotal=0.0;
+        echo '<div class="smgss-wishlist-summary">';
+        if(!$readOnly){
+            $share=$this->shareUrl($ids);
+            echo '<a class="button" href="'.esc_url($share).'">'.esc_html__('Share Wishlist','smg-site-suite').'</a>';
+        }
+        echo '</div><div class="smgss-wishlist-grid">';
         foreach($ids as $id){
             $product=$map[$id]??null;if(!$product)continue;
             echo '<article class="smgss-wishlist-item" data-product-id="'.esc_attr((string)$id).'">';
             echo '<a href="'.esc_url($product->get_permalink()).'" class="smgss-wishlist-image">'.$product->get_image('woocommerce_thumbnail').'</a>';
             echo '<div class="smgss-wishlist-info"><h3><a href="'.esc_url($product->get_permalink()).'">'.esc_html($product->get_name()).'</a></h3>';
+            $subtotal+=(float)$product->get_price();
             echo '<div class="smgss-wishlist-price">'.wp_kses_post($product->get_price_html()).'</div>';
             echo '<a class="button" href="'.esc_url($product->add_to_cart_url()).'">'.esc_html($product->add_to_cart_text()).'</a> ';
-            echo '<button type="button" class="button smgss-wishlist-toggle is-active" data-product-id="'.esc_attr((string)$id).'" aria-pressed="true">'.esc_html((string)($this->settings()['remove_text']??__('Remove from wishlist','smg-site-suite'))).'</button></div></article>';
+            if(!$readOnly)echo '<button type="button" class="button smgss-wishlist-toggle is-active" data-product-id="'.esc_attr((string)$id).'" aria-pressed="true">'.esc_html((string)($this->settings()['remove_text']??__('Remove from wishlist','smg-site-suite'))).'</button>';
+            echo '</div></article>';
         }
         echo '</div>';
+        echo '<div class="smgss-wishlist-subtotal"><strong>'.esc_html__('Wishlist subtotal:','smg-site-suite').'</strong> '.wp_kses_post(wc_price($subtotal)).'</div>';
         return (string)ob_get_clean();
     }
 
@@ -205,6 +221,30 @@ final class Wishlist implements SettingsModuleInterface, ActivatableModuleInterf
             if(!WC()->session->has_session())WC()->session->set_customer_session_cookie(true);
             WC()->session->set(self::SESSION_KEY,$items);
         }
+    }
+
+    private function shareUrl(array $ids):string{
+        $ids=array_slice($this->normalize($ids),0,50);
+        $payload=implode(',',$ids);
+        $encoded=rtrim(strtr(base64_encode($payload),'+/','-_'),'=');
+        $sig=hash_hmac('sha256',$encoded,wp_salt('auth'));
+        $pageId=(int)get_option(self::PAGE_OPTION,0);
+        $base=$pageId>0?get_permalink($pageId):home_url('/wishlist/');
+        return add_query_arg(['smg_wishlist_share'=>$encoded,'sig'=>$sig],$base);
+    }
+
+    private function sharedItems():?array{
+        if(empty($_GET['smg_wishlist_share'])||empty($_GET['sig']))return null;
+        $encoded=sanitize_text_field(wp_unslash($_GET['smg_wishlist_share']));
+        $sig=sanitize_text_field(wp_unslash($_GET['sig']));
+        $expected=hash_hmac('sha256',$encoded,wp_salt('auth'));
+        if(!hash_equals($expected,$sig))return [];
+        $padded=strtr($encoded,'-_','+/');
+        $padding=strlen($padded)%4;
+        if($padding)$padded.=str_repeat('=',4-$padding);
+        $decoded=base64_decode($padded,true);
+        if(!is_string($decoded))return [];
+        return array_slice($this->normalize(explode(',',$decoded)),0,50);
     }
 
     private function normalize(array $items):array{
