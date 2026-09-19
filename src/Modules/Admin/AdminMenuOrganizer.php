@@ -61,7 +61,7 @@ final class AdminMenuOrganizer implements ModuleInterface {
         $hiddenSub=(array)($settings['hidden_sub']??[]);
 
         echo '<div class="wrap"><h1>'.esc_html__('Admin Menu Organizer','smg-site-suite').'</h1>';
-        echo '<p>'.esc_html__('Choose exactly which wp-admin menus and submenus ordinary administrators should see. Protected owners always retain the full menu.','smg-site-suite').'</p>';
+        echo '<p>'.esc_html__('Choose exactly which wp-admin menus and submenus other administrators should see. Protected owners always retain the full menu.','smg-site-suite').'</p>';
         echo '<form method="post" action="'.esc_url(admin_url('admin-post.php')).'"><input type="hidden" name="action" value="smg_site_suite_save_admin_menu">';
         wp_nonce_field('smg_site_suite_save_admin_menu');
 
