@@ -22,13 +22,14 @@ final class SmtpMailer implements SettingsModuleInterface {
 
     public function settings():array{$v=get_option(self::OPTION,[]);return is_array($v)?$v:[];}
     public function saveSettings(array $input):void{
+        $existing=$this->settings();
         $enc=(string)($input['encryption']??'tls');if(!in_array($enc,['tls','ssl','none'],true))$enc='tls';
         update_option(self::OPTION,[
             'host'=>sanitize_text_field((string)($input['host']??'')),
             'port'=>max(1,min(65535,absint($input['port']??587))),
             'encryption'=>$enc,
             'username'=>sanitize_text_field((string)($input['username']??'')),
-            'password'=>(string)($input['password']??''),
+            'password'=>(string)($input['password']??'')!==''?(string)$input['password']:(string)($existing['password']??''),
             'auth'=>!empty($input['auth']),
         ],false);
     }
