@@ -22,9 +22,12 @@ use SMG\SiteSuite\Modules\Admin\FeaturedImageColumn;
 use SMG\SiteSuite\Modules\Admin\DisableAdminBarFrontend;
 use SMG\SiteSuite\Modules\Admin\HideAdminNotices;
 use SMG\SiteSuite\Modules\Admin\FooterTimezone;
+use SMG\SiteSuite\Modules\Utilities\SearchVisibilityStatus;
+use SMG\SiteSuite\Modules\Users\LastLoginColumn;
+use SMG\SiteSuite\Modules\Users\RegistrationDateColumn;
 final class RegistryFactory {
     public static function make():ModuleRegistry{
-        $r=(new ModuleRegistry())->addCategory('admin',__('Admin','smg-site-suite'))->addCategory('content',__('Content','smg-site-suite'))->addCategory('media',__('Media','smg-site-suite'))->addCategory('performance',__('Performance','smg-site-suite'))->addCategory('security',__('Security','smg-site-suite'))->addCategory('utilities',__('Utilities','smg-site-suite'))->addCategory('woocommerce',__('WooCommerce','smg-site-suite'));
+        $r=(new ModuleRegistry())->addCategory('admin',__('Admin','smg-site-suite'))->addCategory('content',__('Content','smg-site-suite'))->addCategory('media',__('Media','smg-site-suite'))->addCategory('performance',__('Performance','smg-site-suite'))->addCategory('security',__('Security','smg-site-suite'))->addCategory('utilities',__('Utilities','smg-site-suite'))->addCategory('users',__('Users','smg-site-suite'))->addCategory('woocommerce',__('WooCommerce','smg-site-suite'));
         $defs=[
             ['disable-comments','Disable Comments','Disable comments, pingbacks, trackbacks, and comment admin surfaces.','content',DisableComments::class,['comments','spam'],['all'],'low',false,[]],
             ['duplicate-content','Duplicate Content','Duplicate posts, pages, and public custom post types from the list screen.','content',DuplicateContent::class,['duplicate','clone'],['admin'],'medium',false,[]],
@@ -49,6 +52,9 @@ final class RegistryFactory {
             ['disable-admin-bar-frontend','Disable Frontend Admin Bar','Hide the WordPress admin toolbar on the public site while keeping wp-admin unchanged.','admin',DisableAdminBarFrontend::class,['admin bar','frontend'],['frontend'],'low',false,[]],
             ['hide-admin-notices','Hide Admin Notices','Hide standard WordPress admin notices for administrators to reduce dashboard clutter.','admin',HideAdminNotices::class,['notices','admin','cleanup'],['admin'],'medium',false,[]],
             ['footer-timezone','Footer Time & Timezone','Show the site-local date, time, and timezone in the WordPress admin footer.','admin',FooterTimezone::class,['timezone','footer','admin'],['admin'],'low',false,[]],
+            ['search-visibility-status','Search Visibility Warning','Show a prominent admin-bar warning whenever search engine indexing is disabled.','utilities',SearchVisibilityStatus::class,['seo','indexing','visibility'],['all'],'low',false,[]],
+            ['last-login-column','Last Login Column','Record and display each user’s most recent successful login in the Users list.','users',LastLoginColumn::class,['users','login','audit'],['admin'],'low',false,[]],
+            ['registration-date-column','Registration Date Column','Show user registration dates in the Users list.','users',RegistrationDateColumn::class,['users','registration','audit'],['admin'],'low',false,[]],
             ['disable-woo-reviews','Disable Product Reviews','Disable WooCommerce product reviews without affecting normal post comments.','woocommerce',DisableReviews::class,['woocommerce','reviews'],['all'],'low',false,['plugins'=>['woocommerce/woocommerce.php']]],
             ['payment-method-column','Payment Method Column','Show the payment method directly in WooCommerce order lists, including HPOS.','woocommerce',PaymentMethodColumn::class,['woocommerce','orders','hpos'],['admin'],'low',false,['plugins'=>['woocommerce/woocommerce.php']]],
             ['order-phone-column','Order Phone Column','Show the billing phone number directly in WooCommerce order lists, including HPOS.','woocommerce',OrderPhoneColumn::class,['woocommerce','orders','phone','hpos'],['admin'],'low',false,['plugins'=>['woocommerce/woocommerce.php']]],
