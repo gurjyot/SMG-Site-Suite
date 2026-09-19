@@ -35,12 +35,18 @@ final class SiteInventoryExport implements ModuleInterface {
             $pluginRows[]=['file'=>$file,'name'=>(string)($plugin['Name']??$file),'version'=>(string)($plugin['Version']??''),'active'=>in_array($file,$active,true)];
         }
 
+        $themeRow=[
+            'stylesheet'=>$theme->get_stylesheet(),
+            'name'=>(string)$theme->get('Name'),
+            'version'=>(string)$theme->get('Version'),
+        ];
+
         $payload=[
             'schema'=>1,
             'generated_at'=>gmdate('c'),
             'site'=>['home'=>home_url('/'),'site'=>site_url('/'),'multisite'=>is_multisite(),'timezone'=>wp_timezone_string()],
             'runtime'=>['wordpress'=>$wp_version,'php'=>PHP_VERSION,'database'=>$wpdb->db_version(),'memory_limit'=>WP_MEMORY_LIMIT],
-            'theme'=>['name'=>$theme->get('Name'),'version'=>$theme->get('Version'),'stylesheet'=>$theme->get_stylesheet()],
+            'theme'=>$themeRow,
             'plugins'=>$pluginRows,
             'site_suite'=>['version'=>SMG_SITE_SUITE_VERSION,'active_modules'=>(array)get_option('smg_site_suite_active_modules',[])],
         ];
