@@ -44,6 +44,7 @@ final class ModuleBrowser {
     public function assets(string $hook):void{
         if($hook!=='toplevel_page_'.$this->config['menu_slug'])return;
 
+        wp_enqueue_media();
         $base=rtrim((string)$this->config['asset_url'],'/').'/';
         wp_enqueue_style('smg-foundation-module-browser',$base.'module-browser.css',[],(string)$this->config['version']);
         wp_enqueue_script('smg-foundation-module-browser',$base.'module-browser.js',[],(string)$this->config['version'],true);
