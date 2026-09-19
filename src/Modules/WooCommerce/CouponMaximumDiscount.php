@@ -38,7 +38,10 @@ final class CouponMaximumDiscount implements SettingsModuleInterface {
     public function saveCoupon(int $postId):void{
         if(!isset($_POST['smg_site_suite_coupon_max_nonce'])||!wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['smg_site_suite_coupon_max_nonce'])),'smg_site_suite_coupon_max'))return;
         if(!current_user_can('edit_post',$postId))return;
-        $value=max(0,(float)($_POST['smg_coupon_max']??0));
+        $rawValue=isset($_POST['smg_coupon_max'])
+            ? sanitize_text_field(wp_unslash($_POST['smg_coupon_max']))
+            : '0';
+        $value=max(0,(float)$rawValue);
         update_post_meta($postId,self::META,$value);
     }
 
