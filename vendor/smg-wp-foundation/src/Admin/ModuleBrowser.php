@@ -199,8 +199,8 @@ final class ModuleBrowser {
         echo '<div class="'.esc_attr($className).'">';
 
         foreach ($options as $value => $label) {
-            $active = $value === 'all' ? ' class="is-active"' : '';
-            echo '<button'.$active
+            $activeClass = $value === 'all' ? 'is-active' : '';
+            echo '<button class="'.esc_attr($activeClass).'"'
                 .' data-'.esc_attr($dataKey).'="'.esc_attr($value).'">'
                 .esc_html($label)
                 .'</button>';
@@ -356,9 +356,11 @@ final class ModuleBrowser {
     public function toggle(): void {
         $this->authorizeAjax();
 
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- authorizeAjax() verifies the request nonce above.
         $slug = isset($_POST['module'])
             ? sanitize_key(wp_unslash($_POST['module']))
             : '';
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- authorizeAjax() verifies the request nonce above.
         $enabled = isset($_POST['enabled'])
             && sanitize_text_field(wp_unslash($_POST['enabled'])) === 'true';
 
@@ -380,6 +382,7 @@ final class ModuleBrowser {
     public function loadSettings(): void {
         $this->authorizeAjax();
 
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- authorizeAjax() verifies the request nonce above.
         $slug = isset($_POST['module'])
             ? sanitize_key(wp_unslash($_POST['module']))
             : '';
@@ -407,9 +410,11 @@ final class ModuleBrowser {
     public function saveSettings(): void {
         $this->authorizeAjax();
 
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- authorizeAjax() verifies the request nonce above.
         $slug = isset($_POST['module'])
             ? sanitize_key(wp_unslash($_POST['module']))
             : '';
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce is verified above; each settings module sanitizes its own schema values.
         $input = isset($_POST['settings']) && is_array($_POST['settings'])
             ? wp_unslash($_POST['settings'])
             : [];
@@ -445,11 +450,12 @@ final class ModuleBrowser {
         }
 
         if (
-            ($_SERVER['REQUEST_METHOD'] ?? '') === 'POST'
+            sanitize_text_field(wp_unslash($_SERVER['REQUEST_METHOD'] ?? '')) === 'POST'
             && isset($_POST['smg_foundation_save_settings'])
         ) {
             check_admin_referer('smg_foundation_settings_'.$slug);
 
+            // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- check_admin_referer() runs above; the settings module sanitizes its own schema values.
             $input = isset($_POST['settings']) && is_array($_POST['settings'])
                 ? wp_unslash($_POST['settings'])
                 : [];
