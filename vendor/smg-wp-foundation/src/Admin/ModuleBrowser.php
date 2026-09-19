@@ -84,7 +84,14 @@ final class ModuleBrowser {
             $search=strtolower($module->name().' '.$module->description().' '.implode(' ',$module->tags()));
 
             printf('<article class="smg-foundation-card" data-category="%1$s" data-status="%2$s" data-search="%3$s" data-configurable="%4$s" data-risk="%5$s">',esc_attr($module->category()),$active?'active':'inactive',esc_attr($search),$module->hasSettings()?'yes':'no',esc_attr($module->risk()));
-            echo '<div class="smg-foundation-card-copy"><div class="smg-foundation-meta"><span class="smg-foundation-category">'.esc_html($categories[$module->category()]??$module->category()).'</span><span class="smg-foundation-risk smg-foundation-risk-'.esc_attr($module->risk()).'">'.esc_html(ucfirst($module->risk()).' risk').'</span></div><h2>'.esc_html($module->name()).'</h2><p>'.esc_html($module->description()).'</p>';
+            echo '<div class="smg-foundation-card-copy"><div class="smg-foundation-meta"><span class="smg-foundation-category">'.esc_html($categories[$module->category()]??$module->category()).'</span><span class="smg-foundation-risk smg-foundation-risk-'.esc_attr($module->risk()).'">'.esc_html(ucfirst($module->risk()).' risk').'</span>';
+            foreach($module->tags() as $tag){
+                if(!str_starts_with($tag,'compat:'))continue;
+                $compatKey=substr($tag,7);
+                $compatLabel=ucwords(str_replace(['-','_'],' ',$compatKey));
+                echo '<span class="smg-foundation-compat smg-foundation-compat-'.esc_attr(sanitize_html_class($compatKey)).'">'.esc_html($compatLabel).'</span>';
+            }
+            echo '</div><h2>'.esc_html($module->name()).'</h2><p>'.esc_html($module->description()).'</p>';
 
             if(!$available)echo '<p class="smg-foundation-dependency">'.esc_html__('Unavailable: ','smg-site-suite').esc_html(implode(', ',$status['missing'])).'</p>';
 
