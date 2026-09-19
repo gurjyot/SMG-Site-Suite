@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: SMG Site Suite
- * Description: A modular suite of lightweight WordPress and WooCommerce enhancements.
+ * Description: WordPress and WooCommerce tools used across SMG client sites.
  * Version: 0.1.0-dev
  * Author: Singh Media Group
  * Text Domain: smg-site-suite
