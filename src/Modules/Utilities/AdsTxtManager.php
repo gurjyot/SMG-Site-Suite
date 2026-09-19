@@ -18,13 +18,17 @@ final class AdsTxtManager implements SettingsModuleInterface {
     public function saveSettings(array $input):void{update_option(self::OPTION,['content'=>sanitize_textarea_field((string)($input['content']??''))],false);}
 
     public function serve():void{
-        $path=(string)wp_parse_url($_SERVER['REQUEST_URI']??'',PHP_URL_PATH);
+        $requestUri=isset($_SERVER['REQUEST_URI'])
+            ? sanitize_text_field(wp_unslash($_SERVER['REQUEST_URI']))
+            : '';
+        $path=(string)wp_parse_url($requestUri,PHP_URL_PATH);
         if($path!=='/ads.txt')return;
         $content=trim((string)($this->settings()['content']??''));
         if($content==='')return;
         status_header(200);
         nocache_headers();
         header('Content-Type: text/plain; charset=utf-8');
+        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- ads.txt is sanitized on save and intentionally served as text/plain.
         echo $content."\n";
         exit;
     }
