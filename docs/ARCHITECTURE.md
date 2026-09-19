@@ -20,6 +20,6 @@ Admin, Content, Media, Performance, Security, Utilities, WooCommerce.
 
 15 working modules in the first development catalog.
 
-## Heavy modules deliberately deferred
+## Larger modules kept out of the first batch
 
-Wishlist, FOMO Sales Notifications, rule-based Discounts, Change/Hide Login URL, and Code Snippets require more state, recovery, security, or frontend architecture than the first batch and will be built as dedicated module systems rather than rushed utility files.
+Wishlist, FOMO Sales Notifications, rule-based Discounts, Change/Hide Login URL, and Code Snippets need more state, recovery, security, or frontend work than the first batch. They should be built as proper module systems rather than squeezed into small utility files.

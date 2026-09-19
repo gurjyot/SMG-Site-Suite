@@ -1,6 +1,6 @@
 # Compatibility Matrix
 
-This document tracks compatibility claims that have actually been tested or intentionally withheld.
+This file records the compatibility we have tested and the compatibility we are not claiming yet.
 
 ## Current test targets
 
@@ -25,7 +25,7 @@ The integration workflow creates and reloads real WooCommerce orders, then repea
 
 **Declared incompatible for now.**
 
-This is deliberate. Site Suite contains several optional modules that currently rely on classic cart/checkout PHP hooks. The plugin must not claim block compatibility until those modules have block/Store API implementations and tests.
+Site Suite still has modules that depend on classic cart and checkout hooks. Blocks compatibility stays off until those modules have Store API or block implementations and matching tests.
 
 Known classic-first modules include:
 
@@ -72,6 +72,6 @@ No global compatibility claim is currently made for WooCommerce's block-based Pr
 A compatibility declaration may be changed from unsupported/unknown to supported only when:
 
 1. the affected modules have an implementation for the target feature;
-2. automated coverage exists where practical;
+2. automated coverage exists for the behavior being claimed;
 3. a real WordPress/WooCommerce integration run passes;
 4. any remaining manual-only behavior is recorded in the beta checklist.

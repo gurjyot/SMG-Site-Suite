@@ -17,7 +17,7 @@ final class PluginUpdateFreeze implements SettingsModuleInterface {
         require_once ABSPATH.'wp-admin/includes/plugin.php';
         $options=[];
         foreach(get_plugins() as $file=>$plugin)$options[$file]=(string)($plugin['Name']??$file);
-        return [['key'=>'plugins','type'=>'multiselect','label'=>__('Frozen plugins','smg-site-suite'),'options'=>$options,'description'=>__('Frozen plugins cannot auto-update. Manual updates are blocked for ordinary admins; Protected Owner users can still update them intentionally.','smg-site-suite')]];
+        return [['key'=>'plugins','type'=>'multiselect','label'=>__('Frozen plugins','smg-site-suite'),'options'=>$options,'description'=>__('Frozen plugins cannot auto-update. Manual updates are blocked for other administrators; Protected Owner users can still update them intentionally.','smg-site-suite')]];
     }
 
     public function settings():array{$v=get_option(self::OPTION,['plugins'=>[]]);return is_array($v)?$v:[];}

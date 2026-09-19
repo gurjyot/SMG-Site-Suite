@@ -16,7 +16,7 @@ final class CriticalPluginProtection implements SettingsModuleInterface {
         require_once ABSPATH.'wp-admin/includes/plugin.php';
         $options=[];
         foreach(get_plugins() as $file=>$plugin)$options[$file]=(string)($plugin['Name']??$file);
-        return [['key'=>'plugins','type'=>'multiselect','label'=>__('Protected plugins','smg-site-suite'),'options'=>$options,'description'=>__('Protected plugins cannot be deactivated by ordinary administrators and will not auto-update. Protected Owner users may still deactivate them.','smg-site-suite')]];
+        return [['key'=>'plugins','type'=>'multiselect','label'=>__('Protected plugins','smg-site-suite'),'options'=>$options,'description'=>__('Protected plugins cannot be deactivated by other administrators and will not auto-update. Protected Owner users may still deactivate them.','smg-site-suite')]];
     }
 
     public function settings():array{$v=get_option(self::OPTION,['plugins'=>[]]);return is_array($v)?$v:[];}
