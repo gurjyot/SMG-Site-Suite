@@ -79,6 +79,8 @@ use SMG\SiteSuite\Modules\Users\TemporaryLogin;
 use SMG\SiteSuite\Modules\Admin\ActivityLogLite;
 use SMG\SiteSuite\Modules\Email\SmtpMailer;
 use SMG\SiteSuite\Modules\Email\MailLog;
+use SMG\SiteSuite\Modules\Utilities\RobotsTxtManager;
+use SMG\SiteSuite\Modules\Utilities\AdsTxtManager;
 final class RegistryFactory {
     public static function make():ModuleRegistry{
         $r=(new ModuleRegistry())->addCategory('admin',__('Admin','smg-site-suite'))->addCategory('content',__('Content','smg-site-suite'))->addCategory('media',__('Media','smg-site-suite'))->addCategory('performance',__('Performance','smg-site-suite'))->addCategory('security',__('Security','smg-site-suite'))->addCategory('utilities',__('Utilities','smg-site-suite'))->addCategory('users',__('Users','smg-site-suite'))->addCategory('email',__('Email','smg-site-suite'))->addCategory('woocommerce',__('WooCommerce','smg-site-suite'));
@@ -168,6 +170,8 @@ final class RegistryFactory {
             ['activity-log-lite','Activity Log Lite','Keep a bounded local history of logins, plugin/theme changes, and content saves.','admin',ActivityLogLite::class,['activity','audit','log'],['all'],'medium',true,[]],
             ['smtp-mailer','SMTP Mailer','Route WordPress mail through a configurable SMTP server.','email',SmtpMailer::class,['smtp','email','delivery'],['all'],'medium',true,[]],
             ['mail-log','Mail Log','Keep a bounded local log of WordPress mail attempts and failures.','email',MailLog::class,['email','mail','log'],['all'],'medium',true,[]],
+            ['robots-txt-manager','Robots.txt Manager','Override the virtual WordPress robots.txt with managed custom content.','utilities',RobotsTxtManager::class,['robots','seo','crawler'],['all'],'medium',true,[]],
+            ['ads-txt-manager','ads.txt Manager','Serve managed ads.txt content virtually from /ads.txt.','utilities',AdsTxtManager::class,['ads.txt','advertising','publisher'],['frontend'],'low',true,[]],
         ];
         foreach($defs as [$slug,$name,$description,$category,$class,$tags,$contexts,$risk,$settings,$dependencies]){
             $r->register(new ModuleDefinition(['slug'=>$slug,'name'=>__($name,'smg-site-suite'),'description'=>__($description,'smg-site-suite'),'category'=>$category,'class'=>$class,'tags'=>$tags,'contexts'=>$contexts,'risk'=>$risk,'has_settings'=>$settings,'dependencies'=>$dependencies]));
