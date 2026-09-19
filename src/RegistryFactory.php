@@ -118,6 +118,8 @@ use SMG\SiteSuite\Modules\WooCommerce\CustomerLifetimeOrders;
 use SMG\SiteSuite\Modules\WooCommerce\EstimatedDeliveryMessage;
 use SMG\SiteSuite\Modules\WooCommerce\CustomStockMessages;
 use SMG\SiteSuite\Modules\WooCommerce\CheckoutSuccessWhatsapp;
+use SMG\SiteSuite\Modules\Users\LoginAsUser;
+use SMG\SiteSuite\Modules\Admin\PluginUpdateFreeze;
 final class RegistryFactory {
     public static function make():ModuleRegistry{
         $r=(new ModuleRegistry())->addCategory('admin',__('Admin','smg-site-suite'))->addCategory('content',__('Content','smg-site-suite'))->addCategory('media',__('Media','smg-site-suite'))->addCategory('performance',__('Performance','smg-site-suite'))->addCategory('security',__('Security','smg-site-suite'))->addCategory('utilities',__('Utilities','smg-site-suite'))->addCategory('users',__('Users','smg-site-suite'))->addCategory('email',__('Email','smg-site-suite'))->addCategory('woocommerce',__('WooCommerce','smg-site-suite'));
@@ -238,6 +240,8 @@ final class RegistryFactory {
             ['estimated-delivery-message','Estimated Delivery Message','Show a configurable delivery-time message on WooCommerce product pages.','woocommerce',EstimatedDeliveryMessage::class,['woocommerce','delivery','product'],['frontend'],'low',true,['plugins'=>['woocommerce/woocommerce.php']]],
             ['custom-stock-messages','Custom Stock Messages','Customize in-stock, low-stock, and out-of-stock WooCommerce availability messages.','woocommerce',CustomStockMessages::class,['woocommerce','stock','inventory'],['frontend'],'low',true,['plugins'=>['woocommerce/woocommerce.php']]],
             ['checkout-success-whatsapp','Checkout Success WhatsApp','Show an order-aware WhatsApp button on the WooCommerce thank-you page.','woocommerce',CheckoutSuccessWhatsapp::class,['woocommerce','whatsapp','checkout','order'],['frontend'],'low',true,['plugins'=>['woocommerce/woocommerce.php']]],
+            ['login-as-user','Login as User','Allow a Protected Owner to impersonate a non-protected user with a one-time return session.','users',LoginAsUser::class,['users','impersonation','support','owner'],['admin'],'high',false,[]],
+            ['plugin-update-freeze','Plugin Update Freeze','Freeze selected plugins from automatic updates and block ordinary administrators from updating them manually.','admin',PluginUpdateFreeze::class,['plugins','updates','freeze','owner'],['admin'],'high',true,[]],
             ['auto-update-email-controls','Auto-Update Email Controls','Optionally suppress WordPress core, plugin, and theme automatic update notification emails.','email',AutoUpdateEmailControls::class,['email','updates','notifications'],['all'],'low',true,[]],
             ['sanitize-upload-filenames','Sanitize Upload Filenames','Normalize new upload filenames to lowercase ASCII kebab-case.','media',SanitizeUploadFilenames::class,['media','filenames','uploads'],['admin','ajax','rest'],'low',false,[]],
             ['temporary-login','Temporary Login','Create one-use expiring administrator access links for support or development.','users',TemporaryLogin::class,['temporary login','support','access'],['all'],'high',false,[]],
