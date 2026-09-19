@@ -1,24 +1,36 @@
 <?php
 namespace SMG\SiteSuite\Modules\Performance;
+
 use SMG\WPFoundation\Contracts\ModuleInterface;
+
 final class DisableEmbeds implements ModuleInterface {
     public function register():void{
-        remove_action('wp_head','wp_oembed_add_discovery_links');
-        remove_action('wp_head','wp_oembed_add_host_js');
-        add_filter('embed_oembed_discover','__return_false');
-        add_filter('rewrite_rules_array',[$this,'rewriteRules']);
-        add_filter('rest_endpoints',[$this,'restEndpoints']);
-    }
-    public function rewriteRules(array $rules):array{
-        foreach(array_keys($rules) as $rule){
-            if(str_starts_with($rule,'embed/'))unset($rules[$rule]);
+        foreach(['wp_oembed_add_discovery_links','wp_oembed_add_host_js'] as $callback){
+            remove_action('wp_head',$callback);
         }
-        return $rules;
+
+        add_filter('embed_oembed_discover',[$this,'disableDiscovery']);
+        add_filter('rewrite_rules_array',[$this,'removeEmbedRules']);
+        add_filter('rest_endpoints',[$this,'removeOembedRoutes']);
     }
-    public function restEndpoints(array $endpoints):array{
-        foreach(array_keys($endpoints) as $route){
-            if(str_starts_with($route,'/oembed/'))unset($endpoints[$route]);
+
+    public function disableDiscovery():bool{
+        return false;
+    }
+
+    public function removeEmbedRules(array $rules):array{
+        return $this->withoutPrefix($rules,'embed/');
+    }
+
+    public function removeOembedRoutes(array $endpoints):array{
+        return $this->withoutPrefix($endpoints,'/oembed/');
+    }
+
+    private function withoutPrefix(array $items,string $prefix):array{
+        foreach($items as $key=>$value){
+            if(str_starts_with((string)$key,$prefix))unset($items[$key]);
         }
-        return $endpoints;
+
+        return $items;
     }
 }
