@@ -18,18 +18,8 @@ if($moduleFiles!==[]){
     exit(1);
 }
 
-$unexpected=[
-    ['filter','manage_woocommerce_page_wc-orders_columns'],
-    ['filter','woocommerce_checkout_fields'],
-    ['action','woocommerce_thankyou'],
-    ['action','template_redirect'],
-];
-foreach($unexpected as [$type,$hook]){
-    $registered=$type==='filter'?has_filter($hook):has_action($hook);
-    if($registered!==false){
-        fwrite(STDERR,"Unexpected Site Suite representative hook while all modules are inactive: {$hook}\n");
-        exit(1);
-    }
-}
-
+// Do not assert that generic WordPress/WooCommerce hooks are globally empty;
+ // core and WooCommerce legitimately use many of the same hook names. The
+ // stronger isolation signal is that no Site Suite module implementation file
+ // was loaded at all.
 echo "SMG Site Suite inactive-module isolation smoke passed.\n";
