@@ -81,6 +81,8 @@ final class DataRegistryFactory {
             ->register('estimated-delivery-message','option','smg_site_suite_delivery_message','configuration')
             ->register('custom-stock-messages','option','smg_site_suite_stock_messages','configuration')
             ->register('checkout-success-whatsapp','option','smg_site_suite_checkout_success_whatsapp','configuration')
+            ->register('product-badge-manager','option','smg_site_suite_product_badges','configuration')
+            ->register('empty-cart-button','option','smg_site_suite_empty_cart_button','configuration')
             ->register('auto-update-email-controls','option','smg_site_suite_update_emails','configuration')
             ->register('temporary-login','user_meta','_smg_site_suite_temp_login','generated')
             ->register('temporary-login','cron','smg_site_suite_temp_login_cleanup','generated')
