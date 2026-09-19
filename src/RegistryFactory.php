@@ -120,6 +120,11 @@ use SMG\SiteSuite\Modules\WooCommerce\CustomStockMessages;
 use SMG\SiteSuite\Modules\WooCommerce\CheckoutSuccessWhatsapp;
 use SMG\SiteSuite\Modules\Users\LoginAsUser;
 use SMG\SiteSuite\Modules\Admin\PluginUpdateFreeze;
+use SMG\SiteSuite\Modules\WooCommerce\ProductBadgeManager;
+use SMG\SiteSuite\Modules\WooCommerce\ProductSkuColumn;
+use SMG\SiteSuite\Modules\WooCommerce\OrderItemSummaryColumn;
+use SMG\SiteSuite\Modules\WooCommerce\CouponUsageColumn;
+use SMG\SiteSuite\Modules\WooCommerce\EmptyCartButton;
 final class RegistryFactory {
     public static function make():ModuleRegistry{
         $r=(new ModuleRegistry())->addCategory('admin',__('Admin','smg-site-suite'))->addCategory('content',__('Content','smg-site-suite'))->addCategory('media',__('Media','smg-site-suite'))->addCategory('performance',__('Performance','smg-site-suite'))->addCategory('security',__('Security','smg-site-suite'))->addCategory('utilities',__('Utilities','smg-site-suite'))->addCategory('users',__('Users','smg-site-suite'))->addCategory('email',__('Email','smg-site-suite'))->addCategory('woocommerce',__('WooCommerce','smg-site-suite'));
@@ -242,6 +247,11 @@ final class RegistryFactory {
             ['checkout-success-whatsapp','Checkout Success WhatsApp','Show an order-aware WhatsApp button on the WooCommerce thank-you page.','woocommerce',CheckoutSuccessWhatsapp::class,['woocommerce','whatsapp','checkout','order'],['frontend'],'low',true,['plugins'=>['woocommerce/woocommerce.php']]],
             ['login-as-user','Login as User','Allow a Protected Owner to impersonate a non-protected user with a one-time return session.','users',LoginAsUser::class,['users','impersonation','support','owner'],['admin'],'high',false,[]],
             ['plugin-update-freeze','Plugin Update Freeze','Freeze selected plugins from automatic updates and block ordinary administrators from updating them manually.','admin',PluginUpdateFreeze::class,['plugins','updates','freeze','owner'],['admin'],'high',true,[]],
+            ['product-badge-manager','Product Badge Manager','Show configurable New, Low Stock, and Out of Stock badges on WooCommerce products.','woocommerce',ProductBadgeManager::class,['woocommerce','products','badges','stock'],['frontend'],'low',true,['plugins'=>['woocommerce/woocommerce.php']]],
+            ['product-sku-column','Product SKU Column','Show product SKUs in the WooCommerce product list.','woocommerce',ProductSkuColumn::class,['woocommerce','products','sku','admin'],['admin'],'low',false,['plugins'=>['woocommerce/woocommerce.php']]],
+            ['order-item-summary-column','Order Item Summary Column','Show a compact product/quantity summary in WooCommerce legacy and HPOS order lists.','woocommerce',OrderItemSummaryColumn::class,['woocommerce','orders','items','hpos'],['admin'],'low',false,['plugins'=>['woocommerce/woocommerce.php']]],
+            ['coupon-usage-column','Coupon Usage Column','Show WooCommerce coupon usage counts and expiry dates in the coupon list.','woocommerce',CouponUsageColumn::class,['woocommerce','coupons','usage','admin'],['admin'],'low',false,['plugins'=>['woocommerce/woocommerce.php']]],
+            ['empty-cart-button','Empty Cart Button','Add a nonce-protected Empty Cart button to the classic WooCommerce cart.','woocommerce',EmptyCartButton::class,['woocommerce','cart','button'],['frontend'],'low',true,['plugins'=>['woocommerce/woocommerce.php']]],
             ['auto-update-email-controls','Auto-Update Email Controls','Optionally suppress WordPress core, plugin, and theme automatic update notification emails.','email',AutoUpdateEmailControls::class,['email','updates','notifications'],['all'],'low',true,[]],
             ['sanitize-upload-filenames','Sanitize Upload Filenames','Normalize new upload filenames to lowercase ASCII kebab-case.','media',SanitizeUploadFilenames::class,['media','filenames','uploads'],['admin','ajax','rest'],'low',false,[]],
             ['temporary-login','Temporary Login','Create one-use expiring administrator access links for support or development.','users',TemporaryLogin::class,['temporary login','support','access'],['all'],'high',false,[]],
