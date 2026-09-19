@@ -26,12 +26,12 @@ final class CriticalPluginProtection implements SettingsModuleInterface {
     }
 
     public function actions(array $actions,string $pluginFile,array $pluginData,string $context):array{
-        if(in_array($pluginFile,$this->protected(),true)&&!ProtectedOwner::isProtectedCurrentUser())unset($actions['deactivate']);
+        if(in_array($pluginFile,$this->protected(),true)&&!(ProtectedOwner::isEnabled()&&ProtectedOwner::isProtectedCurrentUser()))unset($actions['deactivate']);
         return $actions;
     }
 
     public function protect($new,$old){
-        if(ProtectedOwner::isProtectedCurrentUser())return $new;
+        if(ProtectedOwner::isEnabled()&&ProtectedOwner::isProtectedCurrentUser())return $new;
         $newList=is_array($new)?$new:[];$oldList=is_array($old)?$old:[];
         foreach($this->protected() as $plugin){
             if(in_array($plugin,$oldList,true)&&!in_array($plugin,$newList,true))$newList[]=$plugin;
