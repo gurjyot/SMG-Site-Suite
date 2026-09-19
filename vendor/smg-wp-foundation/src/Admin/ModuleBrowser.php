@@ -356,13 +356,13 @@ final class ModuleBrowser {
     public function toggle(): void {
         $this->authorizeAjax();
 
-        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- authorizeAjax() verifies the request nonce above.
+        // phpcs:disable WordPress.Security.NonceVerification.Missing -- authorizeAjax() verifies the request nonce above.
         $slug = isset($_POST['module'])
             ? sanitize_key(wp_unslash($_POST['module']))
             : '';
-        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- authorizeAjax() verifies the request nonce above.
         $enabled = isset($_POST['enabled'])
             && sanitize_text_field(wp_unslash($_POST['enabled'])) === 'true';
+        // phpcs:enable WordPress.Security.NonceVerification.Missing
 
         try {
             if ($enabled) {
@@ -382,10 +382,11 @@ final class ModuleBrowser {
     public function loadSettings(): void {
         $this->authorizeAjax();
 
-        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- authorizeAjax() verifies the request nonce above.
+        // phpcs:disable WordPress.Security.NonceVerification.Missing -- authorizeAjax() verifies the request nonce above.
         $slug = isset($_POST['module'])
             ? sanitize_key(wp_unslash($_POST['module']))
             : '';
+        // phpcs:enable WordPress.Security.NonceVerification.Missing
 
         try {
             $module = $this->manager->settingsModule($slug);
@@ -410,14 +411,14 @@ final class ModuleBrowser {
     public function saveSettings(): void {
         $this->authorizeAjax();
 
-        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- authorizeAjax() verifies the request nonce above.
+        // phpcs:disable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- authorizeAjax() verifies the nonce; each settings module sanitizes its own schema values.
         $slug = isset($_POST['module'])
             ? sanitize_key(wp_unslash($_POST['module']))
             : '';
-        // phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce is verified above; each settings module sanitizes its own schema values.
         $input = isset($_POST['settings']) && is_array($_POST['settings'])
             ? wp_unslash($_POST['settings'])
             : [];
+        // phpcs:enable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
         try {
             $module = $this->manager->settingsModule($slug);
@@ -455,10 +456,11 @@ final class ModuleBrowser {
         ) {
             check_admin_referer('smg_foundation_settings_'.$slug);
 
-            // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- check_admin_referer() runs above; the settings module sanitizes its own schema values.
+            // phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- check_admin_referer() runs above; the settings module sanitizes its own schema values.
             $input = isset($_POST['settings']) && is_array($_POST['settings'])
                 ? wp_unslash($_POST['settings'])
                 : [];
+            // phpcs:enable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
             $module->saveSettings($input);
 
