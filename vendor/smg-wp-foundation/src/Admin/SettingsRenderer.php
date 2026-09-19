@@ -16,6 +16,6 @@ final class SettingsRenderer {
         if($type==='textarea')printf('<textarea class="large-text" rows="5" id="%1$s" name="%2$s">%3$s</textarea>',esc_attr($id),esc_attr($name),esc_textarea((string)$value));
         elseif($type==='number')printf('<input class="regular-text" type="number" id="%1$s" name="%2$s" value="%3$s">',esc_attr($id),esc_attr($name),esc_attr((string)$value));
         elseif($type==='select'){printf('<select id="%1$s" name="%2$s">',esc_attr($id),esc_attr($name));foreach((array)($field['options']??[]) as $ov=>$ol)printf('<option value="%1$s" %2$s>%3$s</option>',esc_attr((string)$ov),selected((string)$value,(string)$ov,false),esc_html((string)$ol));echo '</select>';}
-        else{$htmlType=in_array($type,['url','email'],true)?$type:'text';printf('<input class="regular-text" type="%1$s" id="%2$s" name="%3$s" value="%4$s">',esc_attr($htmlType),esc_attr($id),esc_attr($name),esc_attr((string)$value));}
+        else{$htmlType=in_array($type,['url','email','password'],true)?$type:'text';printf('<input class="regular-text" type="%1$s" id="%2$s" name="%3$s" value="%4$s">',esc_attr($htmlType),esc_attr($id),esc_attr($name),esc_attr((string)$value));}
     }
 }
