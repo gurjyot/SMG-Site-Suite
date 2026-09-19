@@ -57,6 +57,8 @@ final class DataRegistryFactory {
             ->register('admin-menu-organizer','option','smg_site_suite_admin_menu_tree','configuration')
             ->register('protected-owner','option','smg_site_suite_protected_owners','configuration')
             ->register('custom-dashboard-page','option','smg_site_suite_custom_dashboard','configuration')
+            ->register('disable-user-account','user_meta','_smg_site_suite_account_disabled','configuration')
+            ->register('hide-admin-bar-by-role','option','smg_site_suite_hide_admin_bar_roles','configuration')
             ->register('temporary-login','user_meta','_smg_site_suite_temp_login','generated')
             ->register('temporary-login','cron','smg_site_suite_temp_login_cleanup','generated')
             ->register('activity-log-lite','option','smg_site_suite_activity_log','generated')
