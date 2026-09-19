@@ -18,6 +18,7 @@ final class ProtectedOwner implements ModuleInterface, ActivatableModuleInterfac
 
     public function deactivate():void{
         if(!self::isProtectedCurrentUser()){
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception text is not HTML output.
             throw new RuntimeException(__('Only a protected owner can disable Protected Owner.','smg-site-suite'));
         }
     }
@@ -107,8 +108,8 @@ final class ProtectedOwner implements ModuleInterface, ActivatableModuleInterfac
     }
 
     private function requestedPluginAction():string{
-        $value=$_REQUEST['action']??'';
-        return is_string($value)?sanitize_key(wp_unslash($value)):'';
+        if(!isset($_REQUEST['action'])||!is_string($_REQUEST['action']))return '';
+        return sanitize_key(wp_unslash($_REQUEST['action']));
     }
 
     public function render():void{
