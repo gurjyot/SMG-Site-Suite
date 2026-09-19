@@ -20,5 +20,5 @@ final class OrderAmountRules implements SettingsModuleInterface {
         return [];
     }
     public function validateClassic():void{$v=$this->violation();if($v)wc_add_notice(wp_strip_all_tags($v[1]),'error');}
-    public function validateStoreApi(WP_Error $errors):void{$v=$this->violation();if($v)$errors->add('smg_site_suite_'.$v[0],wp_strip_all_tags($v[1]));}
+    public function validateStoreApi(\WP_Error $errors):void{$v=$this->violation();if($v)$errors->add('smg_site_suite_'.$v[0],wp_strip_all_tags($v[1]));}
 }
