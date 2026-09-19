@@ -10,6 +10,7 @@ final class ModuleRegistry {
     public function addCategory(string $slug, string $label): self {
         $slug = strtolower(trim($slug));
         if ($slug === '' || $label === '') {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are internal diagnostics, not HTML output.
             throw new InvalidArgumentException('Category slug and label are required.');
         }
 
@@ -19,6 +20,7 @@ final class ModuleRegistry {
 
     public function register(ModuleDefinition $module): self {
         if (isset($this->modules[$module->slug()])) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are internal diagnostics, not HTML output.
             throw new InvalidArgumentException('Duplicate module slug: '.$module->slug());
         }
 
