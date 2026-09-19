@@ -1,0 +1,64 @@
+name: beta-package
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  package-and-install:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: wordpress
+          MYSQL_USER: wordpress
+          MYSQL_PASSWORD: wordpress
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+          tools: wp-cli
+
+      - name: Build beta ZIP
+        run: |
+          chmod +x scripts/build-beta.sh
+          scripts/build-beta.sh "$GITHUB_WORKSPACE/build"
+          unzip -l build/smg-site-suite.zip
+          test -f build/smg-site-suite.zip
+
+      - name: Install clean WordPress
+        run: |
+          mkdir -p /tmp/smg-beta
+          cd /tmp/smg-beta
+          wp core download --version=7.1.1 --force
+          wp config create --dbname=wordpress --dbuser=wordpress --dbpass=wordpress --dbhost=127.0.0.1:3306 --skip-check
+          wp core install --url=http://smg.test --title="SMG Beta" --admin_user=admin --admin_password=admin --admin_email=admin@example.test --skip-email
+
+      - name: Install exact ZIP
+        run: |
+          cd /tmp/smg-beta
+          wp plugin install "$GITHUB_WORKSPACE/build/smg-site-suite.zip" --activate
+          cp "$GITHUB_WORKSPACE/tests/integration/zip-install-smoke.php" /tmp/zip-install-smoke.php
+          wp eval-file /tmp/zip-install-smoke.php
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: smg-site-suite-beta
+          path: build/smg-site-suite.zip
+          if-no-files-found: error
