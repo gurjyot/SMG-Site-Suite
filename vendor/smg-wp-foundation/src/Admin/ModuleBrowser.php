@@ -75,7 +75,7 @@ final class ModuleBrowser {
         echo '<div class="smg-foundation-layout"><nav class="smg-foundation-sidebar"><button class="is-active" data-category="all">'.esc_html__('All Modules','smg-site-suite').'</button>';
         foreach($categories as $slug=>$label)printf('<button data-category="%1$s">%2$s</button>',esc_attr($slug),esc_html($label));
 
-        echo '</nav><main><div class="smg-foundation-toolbar"><div class="smg-foundation-status-filters"><button class="is-active" data-status="all">'.esc_html__('All','smg-site-suite').'</button><button data-status="active">'.esc_html__('Active','smg-site-suite').'</button><button data-status="inactive">'.esc_html__('Inactive','smg-site-suite').'</button></div><div class="smg-foundation-settings-filters"><button class="is-active" data-configurable="all">'.esc_html__('Any type','smg-site-suite').'</button><button data-configurable="yes">'.esc_html__('Configurable','smg-site-suite').'</button><button data-configurable="no">'.esc_html__('One-click','smg-site-suite').'</button></div></div><section class="smg-foundation-grid">';
+        echo '</nav><main><div class="smg-foundation-toolbar"><div class="smg-foundation-status-filters"><button class="is-active" data-status="all">'.esc_html__('All','smg-site-suite').'</button><button data-status="active">'.esc_html__('Active','smg-site-suite').'</button><button data-status="inactive">'.esc_html__('Inactive','smg-site-suite').'</button></div><div class="smg-foundation-settings-filters"><button class="is-active" data-configurable="all">'.esc_html__('Any type','smg-site-suite').'</button><button data-configurable="yes">'.esc_html__('Configurable','smg-site-suite').'</button><button data-configurable="no">'.esc_html__('One-click','smg-site-suite').'</button></div><div class="smg-foundation-risk-filters"><button class="is-active" data-risk="all">'.esc_html__('Any risk','smg-site-suite').'</button><button data-risk="high">'.esc_html__('High risk','smg-site-suite').'</button></div></div><section class="smg-foundation-grid">';
 
         foreach($modules as $module){
             $status=$this->manager->status($module->slug());
@@ -83,8 +83,8 @@ final class ModuleBrowser {
             $available=$status['available'];
             $search=strtolower($module->name().' '.$module->description().' '.implode(' ',$module->tags()));
 
-            printf('<article class="smg-foundation-card" data-category="%1$s" data-status="%2$s" data-search="%3$s" data-configurable="%4$s">',esc_attr($module->category()),$active?'active':'inactive',esc_attr($search),$module->hasSettings()?'yes':'no');
-            echo '<div class="smg-foundation-card-copy"><span class="smg-foundation-category">'.esc_html($categories[$module->category()]??$module->category()).'</span><h2>'.esc_html($module->name()).'</h2><p>'.esc_html($module->description()).'</p>';
+            printf('<article class="smg-foundation-card" data-category="%1$s" data-status="%2$s" data-search="%3$s" data-configurable="%4$s" data-risk="%5$s">',esc_attr($module->category()),$active?'active':'inactive',esc_attr($search),$module->hasSettings()?'yes':'no',esc_attr($module->risk()));
+            echo '<div class="smg-foundation-card-copy"><div class="smg-foundation-meta"><span class="smg-foundation-category">'.esc_html($categories[$module->category()]??$module->category()).'</span><span class="smg-foundation-risk smg-foundation-risk-'.esc_attr($module->risk()).'">'.esc_html(ucfirst($module->risk()).' risk').'</span></div><h2>'.esc_html($module->name()).'</h2><p>'.esc_html($module->description()).'</p>';
 
             if(!$available)echo '<p class="smg-foundation-dependency">'.esc_html__('Unavailable: ','smg-site-suite').esc_html(implode(', ',$status['missing'])).'</p>';
 
@@ -98,7 +98,7 @@ final class ModuleBrowser {
                 }
             }
 
-            echo '</div><label class="smg-foundation-switch"><input class="smg-foundation-toggle" type="checkbox" value="'.esc_attr($module->slug()).'" '.checked($active,true,false).' '.disabled($available,false,false).'><span></span></label></article>';
+            echo '</div><label class="smg-foundation-switch"><input class="smg-foundation-toggle" type="checkbox" value="'.esc_attr($module->slug()).'" data-risk="'.esc_attr($module->risk()).'" data-title="'.esc_attr($module->name()).'" '.checked($active,true,false).' '.disabled($available,false,false).'><span></span></label></article>';
         }
 
         echo '</section></main></div>';
