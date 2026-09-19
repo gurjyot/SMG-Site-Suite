@@ -178,10 +178,18 @@ final class MailLog implements SettingsModuleInterface {
     }
 
     private function renderTable(array $log): void {
+        $headings = [
+            __('Time', 'smg-site-suite'),
+            __('To', 'smg-site-suite'),
+            __('Subject', 'smg-site-suite'),
+            __('Status', 'smg-site-suite'),
+            __('Error', 'smg-site-suite'),
+        ];
+
         echo '<table class="widefat striped">';
         echo '<thead><tr>';
-        foreach (['Time', 'To', 'Subject', 'Status', 'Error'] as $heading) {
-            echo '<th>'.esc_html__($heading, 'smg-site-suite').'</th>';
+        foreach ($headings as $heading) {
+            echo '<th>'.esc_html($heading).'</th>';
         }
         echo '</tr></thead><tbody>';
 
