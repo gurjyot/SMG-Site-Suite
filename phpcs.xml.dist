@@ -5,13 +5,13 @@
   <file>smg-site-suite.php</file>
   <file>includes</file>
   <file>src</file>
+  <file>vendor/smg-wp-foundation/src</file>
 
   <arg name="extensions" value="php"/>
   <arg name="basepath" value="."/>
   <arg name="colors"/>
   <arg name="warning-severity" value="0"/>
 
-  <exclude-pattern>vendor/*</exclude-pattern>
   <exclude-pattern>tests/*</exclude-pattern>
 
   <rule ref="WordPress.Security"/>
