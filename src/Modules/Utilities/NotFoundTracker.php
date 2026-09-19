@@ -10,6 +10,7 @@ final class NotFoundTracker implements SettingsModuleInterface {
     public function register():void{
         add_action('template_redirect',[$this,'track'],99);
         add_action('admin_menu',[$this,'menu'],40);
+        add_action('admin_post_smg_site_suite_404_redirect',[$this,'createRedirect']);
     }
 
     public function settingsSchema():array{
@@ -34,6 +35,29 @@ final class NotFoundTracker implements SettingsModuleInterface {
         update_option(self::OPTION,$log,false);
     }
 
+    public function createRedirect():void{
+        if(!current_user_can('manage_options'))wp_die(esc_html__('Insufficient permissions.','smg-site-suite'));
+        $from=isset($_POST['from'])?sanitize_text_field(wp_unslash($_POST['from'])):'';
+        $to=isset($_POST['to'])?sanitize_text_field(wp_unslash($_POST['to'])):'';
+        if(!str_starts_with($from,'/')||!str_starts_with($to,'/'))wp_die(esc_html__('Redirect paths must begin with /.','smg-site-suite'));
+        check_admin_referer('smg_site_suite_404_redirect_'.md5($from));
+
+        $option=get_option('smg_site_suite_redirects',[]);
+        if(!is_array($option))$option=[];
+        $rules=(string)($option['rules']??'');
+        $line=$from.' => '.$to;
+        $lines=array_filter(array_map('trim',preg_split('/\r\n|\r|\n/',$rules)?:[]));
+        $replaced=false;
+        foreach($lines as $index=>$existing){
+            if(str_starts_with($existing,$from.' =>')){$lines[$index]=$line;$replaced=true;break;}
+        }
+        if(!$replaced)$lines[]=$line;
+        update_option('smg_site_suite_redirects',['rules'=>implode("\n",$lines)],false);
+
+        wp_safe_redirect(add_query_arg(['page'=>'smg-site-suite-404-log','redirect_added'=>'1'],admin_url('admin.php')));
+        exit;
+    }
+
     public function menu():void{
         add_submenu_page('smg-site-suite',__('404 Log','smg-site-suite'),__('404 Log','smg-site-suite'),'manage_options','smg-site-suite-404-log',[$this,'render']);
     }
@@ -41,9 +65,13 @@ final class NotFoundTracker implements SettingsModuleInterface {
     public function render():void{
         if(!current_user_can('manage_options'))return;
         $log=get_option(self::OPTION,[]);if(!is_array($log))$log=[];
-        echo '<div class="wrap"><h1>'.esc_html__('404 Log','smg-site-suite').'</h1><table class="widefat striped"><thead><tr><th>'.esc_html__('URL','smg-site-suite').'</th><th>'.esc_html__('Hits','smg-site-suite').'</th><th>'.esc_html__('Last seen','smg-site-suite').'</th><th>'.esc_html__('Referrer','smg-site-suite').'</th></tr></thead><tbody>';
+        echo '<div class="wrap"><h1>'.esc_html__('404 Log','smg-site-suite').'</h1><table class="widefat striped"><thead><tr><th>'.esc_html__('URL','smg-site-suite').'</th><th>'.esc_html__('Hits','smg-site-suite').'</th><th>'.esc_html__('Last seen','smg-site-suite').'</th><th>'.esc_html__('Referrer','smg-site-suite').'</th><th>'.esc_html__('Create Redirect','smg-site-suite').'</th></tr></thead><tbody>';
         foreach($log as $row){
-            echo '<tr><td><code>'.esc_html((string)$row['url']).'</code></td><td>'.esc_html((string)$row['count']).'</td><td>'.esc_html(wp_date('Y-m-d H:i',(int)$row['last'])).'</td><td>'.esc_html((string)$row['referer']).'</td></tr>';
+            $path=(string)wp_parse_url((string)$row['url'],PHP_URL_PATH);
+            echo '<tr><td><code>'.esc_html((string)$row['url']).'</code></td><td>'.esc_html((string)$row['count']).'</td><td>'.esc_html(wp_date('Y-m-d H:i',(int)$row['last'])).'</td><td>'.esc_html((string)$row['referer']).'</td><td>';
+            echo '<form method="post" action="'.esc_url(admin_url('admin-post.php')).'" style="display:flex;gap:6px;min-width:260px"><input type="hidden" name="action" value="smg_site_suite_404_redirect"><input type="hidden" name="from" value="'.esc_attr($path).'">';
+            wp_nonce_field('smg_site_suite_404_redirect_'.md5($path));
+            echo '<input type="text" name="to" placeholder="/new-path" required style="width:150px"><button class="button button-small">'.esc_html__('Add','smg-site-suite').'</button></form></td></tr>';
         }
         echo '</tbody></table></div>';
     }
