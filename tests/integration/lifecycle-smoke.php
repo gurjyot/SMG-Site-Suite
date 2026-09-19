@@ -3,6 +3,8 @@ if(!defined('ABSPATH')){fwrite(STDERR,"WordPress not loaded\n");exit(1);}
 if(!defined('SMG_SITE_SUITE_VERSION')){fwrite(STDERR,"Site Suite not loaded\n");exit(1);}
 if(!class_exists('WooCommerce')){fwrite(STDERR,"WooCommerce not loaded\n");exit(1);}
 
+if(!function_exists('wp_delete_user'))require_once ABSPATH.'wp-admin/includes/user.php';
+
 use SMG\SiteSuite\RegistryFactory;
 use SMG\WPFoundation\Modules\DependencyChecker;
 use SMG\WPFoundation\Modules\ModuleManager;
