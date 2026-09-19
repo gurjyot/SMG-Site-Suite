@@ -14,7 +14,7 @@ final class AdminMenuOrganizer implements ModuleInterface {
     }
 
     public function registerPage():void{
-        if(ProtectedOwner::isProtectedCurrentUser()||!class_exists(ProtectedOwner::class)){
+        if(!ProtectedOwner::isEnabled()||ProtectedOwner::isProtectedCurrentUser()){
             add_submenu_page(
                 'smg-site-suite',
                 __('Menu Organizer','smg-site-suite'),
@@ -27,7 +27,7 @@ final class AdminMenuOrganizer implements ModuleInterface {
     }
 
     public function apply():void{
-        if(ProtectedOwner::isProtectedCurrentUser())return;
+        if(ProtectedOwner::isEnabled()&&ProtectedOwner::isProtectedCurrentUser())return;
 
         $settings=$this->settings();
 
@@ -50,7 +50,7 @@ final class AdminMenuOrganizer implements ModuleInterface {
     }
 
     public function render():void{
-        if(class_exists(ProtectedOwner::class)&&!ProtectedOwner::isProtectedCurrentUser()){
+        if(ProtectedOwner::isEnabled()&&!ProtectedOwner::isProtectedCurrentUser()){
             wp_die(esc_html__('Only a protected owner can configure the admin menu.','smg-site-suite'));
         }
         if(!current_user_can('manage_options'))return;
@@ -101,7 +101,7 @@ final class AdminMenuOrganizer implements ModuleInterface {
     }
 
     public function save():void{
-        if(class_exists(ProtectedOwner::class)&&!ProtectedOwner::isProtectedCurrentUser()){
+        if(ProtectedOwner::isEnabled()&&!ProtectedOwner::isProtectedCurrentUser()){
             wp_die(esc_html__('Only a protected owner can configure the admin menu.','smg-site-suite'));
         }
         if(!current_user_can('manage_options'))wp_die(esc_html__('Insufficient permissions.','smg-site-suite'));
