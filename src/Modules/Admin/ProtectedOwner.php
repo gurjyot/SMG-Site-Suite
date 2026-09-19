@@ -1,10 +1,12 @@
 <?php
 namespace SMG\SiteSuite\Modules\Admin;
 
+use RuntimeException;
 use SMG\WPFoundation\Contracts\ActivatableModuleInterface;
+use SMG\WPFoundation\Contracts\DeactivatableModuleInterface;
 use SMG\WPFoundation\Contracts\ModuleInterface;
 
-final class ProtectedOwner implements ModuleInterface, ActivatableModuleInterface {
+final class ProtectedOwner implements ModuleInterface, ActivatableModuleInterface, DeactivatableModuleInterface {
     private const OPTION='smg_site_suite_protected_owners';
 
     public function activate():void{
@@ -12,6 +14,12 @@ final class ProtectedOwner implements ModuleInterface, ActivatableModuleInterfac
         $owners=$this->owners();
         $owners[]=get_current_user_id();
         update_option(self::OPTION,array_values(array_unique(array_filter(array_map('absint',$owners)))),false);
+    }
+
+    public function deactivate():void{
+        if(!self::isProtectedCurrentUser()){
+            throw new RuntimeException(__('Only a protected owner can disable Protected Owner.','smg-site-suite'));
+        }
     }
 
     public function register():void{
