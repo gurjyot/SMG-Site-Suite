@@ -47,6 +47,7 @@ $abilityNames = [
     'smg-site-suite/get-site-inventory',
     'smg-site-suite/get-database-table-sizes',
     'smg-site-suite/list-rewrite-rules',
+    'smg-site-suite/get-site-health',
 ];
 
 foreach ($abilityNames as $name) {
@@ -81,6 +82,7 @@ $deleteRedirectAbility = wp_get_ability('smg-site-suite/delete-redirect');
 $siteInventoryAbility = wp_get_ability('smg-site-suite/get-site-inventory');
 $databaseSizesAbility = wp_get_ability('smg-site-suite/get-database-table-sizes');
 $rewriteRulesAbility = wp_get_ability('smg-site-suite/list-rewrite-rules');
+$siteHealthAbility = wp_get_ability('smg-site-suite/get-site-health');
 
 $originalActive = (array) get_option('smg_site_suite_active_modules', []);
 $originalDashboard = get_option('smg_site_suite_custom_dashboard', null);
@@ -177,6 +179,7 @@ try {
             'site-inventory-export',
             'database-table-sizes',
             'rewrite-rules-viewer',
+            'site-health-extensions',
         ] as $slug) {
             $activated = $activateAbility->execute(['slug' => $slug]);
             $assert(!is_wp_error($activated), "Could not activate operational module: {$slug}");
@@ -371,6 +374,31 @@ try {
                 ($rewriteRules['rules'][0]['pattern'] ?? '') === '^smg-agent-test/?$',
                 'Rewrite rules ability returned the wrong pattern.'
             );
+        }
+    }
+
+    if ($siteHealthAbility instanceof WP_Ability) {
+        $siteHealth = $siteHealthAbility->execute([]);
+        $assert(!is_wp_error($siteHealth), 'Site health ability returned an error.');
+        if (is_array($siteHealth)) {
+            $assert(
+                ($siteHealth['count'] ?? 0) === 4,
+                'Site health ability did not return four checks.'
+            );
+            $assert(
+                isset($siteHealth['recommended_count'])
+                    && (int) $siteHealth['recommended_count'] >= 0
+                    && (int) $siteHealth['recommended_count'] <= 4,
+                'Site health ability returned an invalid recommendation count.'
+            );
+
+            $ids = array_column((array) ($siteHealth['checks'] ?? []), 'id');
+            foreach (['https', 'debug', 'search_visibility', 'wp_cron'] as $expectedId) {
+                $assert(
+                    in_array($expectedId, $ids, true),
+                    "Site health ability is missing check: {$expectedId}"
+                );
+            }
         }
     }
 
