@@ -101,6 +101,11 @@ jobs:
           cd /tmp/smg-wp
           wp eval-file wp-content/plugins/smg-site-suite/tests/integration/runtime-smoke.php
 
+      - name: WooCommerce semantic smoke
+        run: |
+          cd /tmp/smg-wp
+          wp eval-file wp-content/plugins/smg-site-suite/tests/integration/woo-semantics-smoke.php
+
       - name: Enable HPOS
         run: |
           cd /tmp/smg-wp
