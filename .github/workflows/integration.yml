@@ -75,6 +75,11 @@ jobs:
           cd /tmp/smg-wp
           wp eval-file wp-content/plugins/smg-site-suite/tests/integration/lifecycle-smoke.php
 
+      - name: Verify WordPress Abilities agent surface
+        run: |
+          cd /tmp/smg-wp
+          wp eval-file wp-content/plugins/smg-site-suite/tests/integration/abilities-smoke.php
+
       - name: Measure zero-module bootstrap overhead
         if: matrix.wordpress == '7.1.1'
         run: |
