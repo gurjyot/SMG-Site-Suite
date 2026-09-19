@@ -167,7 +167,7 @@ final class Wishlist implements SettingsModuleInterface, ActivatableModuleInterf
         foreach($ids as $id){
             $product=$map[$id]??null;if(!$product)continue;
             echo '<article class="smgss-wishlist-item" data-product-id="'.esc_attr((string)$id).'">';
-            echo '<a href="'.esc_url($product->get_permalink()).'" class="smgss-wishlist-image">'.$product->get_image('woocommerce_thumbnail').'</a>';
+            echo '<a href="'.esc_url($product->get_permalink()).'" class="smgss-wishlist-image">'.wp_kses_post($product->get_image('woocommerce_thumbnail')).'</a>';
             echo '<div class="smgss-wishlist-info"><h3><a href="'.esc_url($product->get_permalink()).'">'.esc_html($product->get_name()).'</a></h3>';
             $subtotal+=(float)$product->get_price();
             echo '<div class="smgss-wishlist-price">'.wp_kses_post($product->get_price_html()).'</div>';
