@@ -10,8 +10,11 @@
   const drawerForm = root.querySelector('#smg-foundation-settings-form');
   const moduleInput = drawerForm?.querySelector('input[name="module"]');
   const saveStatus = root.querySelector('.smg-foundation-save-status');
+
   let category = 'all';
   let status = 'all';
+  let configurable = 'all';
+  let risk = 'all';
 
   const applyFilters = () => {
     const query = (search?.value || '').trim().toLowerCase();
@@ -19,6 +22,8 @@
       const visible =
         (category === 'all' || card.dataset.category === category) &&
         (status === 'all' || card.dataset.status === status) &&
+        (configurable === 'all' || card.dataset.configurable === configurable) &&
+        (risk === 'all' || card.dataset.risk === risk) &&
         (!query || (card.dataset.search || '').includes(query));
       card.hidden = !visible;
     });
@@ -28,19 +33,25 @@
     button.addEventListener('click', () => {
       root.querySelectorAll('.smg-foundation-sidebar button').forEach((item) => item.classList.remove('is-active'));
       button.classList.add('is-active');
-      category = button.dataset.category;
+      category = button.dataset.category || 'all';
       applyFilters();
     });
   });
 
-  root.querySelectorAll('.smg-foundation-toolbar button').forEach((button) => {
-    button.addEventListener('click', () => {
-      root.querySelectorAll('.smg-foundation-toolbar button').forEach((item) => item.classList.remove('is-active'));
-      button.classList.add('is-active');
-      status = button.dataset.status;
-      applyFilters();
+  const bindFilterGroup = (selector, dataKey, assign) => {
+    const buttons = [...root.querySelectorAll(selector)];
+    buttons.forEach((button) => {
+      button.addEventListener('click', () => {
+        buttons.forEach((item) => item.classList.toggle('is-active', item === button));
+        assign(button.dataset[dataKey] || 'all');
+        applyFilters();
+      });
     });
-  });
+  };
+
+  bindFilterGroup('.smg-foundation-status-filters [data-status]', 'status', (value) => { status = value; });
+  bindFilterGroup('.smg-foundation-settings-filters [data-configurable]', 'configurable', (value) => { configurable = value; });
+  bindFilterGroup('.smg-foundation-risk-filters [data-risk]', 'risk', (value) => { risk = value; });
 
   search?.addEventListener('input', applyFilters);
 
@@ -48,6 +59,18 @@
     toggle.addEventListener('change', async () => {
       const card = toggle.closest('.smg-foundation-card');
       const settingsButton = card?.querySelector('.smg-foundation-settings-button');
+      const enabled = toggle.checked;
+      const moduleRisk = toggle.dataset.risk || 'low';
+
+      if (enabled && moduleRisk === 'high') {
+        const title = toggle.dataset.title || toggle.value;
+        const message = `Enable high-risk module "${title}"? Review its settings and recovery path first.`;
+        if (!window.confirm(message)) {
+          toggle.checked = false;
+          return;
+        }
+      }
+
       toggle.disabled = true;
 
       const body = new URLSearchParams({
@@ -67,7 +90,7 @@
         const result = await response.json();
         if (!result.success) throw new Error(result?.data?.message || smgFoundationModules.error);
 
-        card.dataset.status = toggle.checked ? 'active' : 'inactive';
+        if (card) card.dataset.status = toggle.checked ? 'active' : 'inactive';
         if (settingsButton) settingsButton.disabled = !toggle.checked;
         applyFilters();
       } catch (error) {
