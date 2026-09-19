@@ -74,7 +74,7 @@ final class FomoSalesNotifications implements SettingsModuleInterface, Activatab
 
             $city=trim((string)$order->get_billing_city());
             $firstName=trim((string)$order->get_billing_first_name());
-            $customer=$firstName!==''?mb_substr($firstName,0,1).'***':__('Someone','smg-site-suite');
+            $initial=$firstName!==''?(function_exists('mb_substr')?mb_substr($firstName,0,1):substr($firstName,0,1)):'';\n            $customer=$initial!==''?$initial.'***':__('Someone','smg-site-suite');
 
             foreach($order->get_items('line_item') as $item){
                 if(!$item instanceof WC_Order_Item_Product)continue;
