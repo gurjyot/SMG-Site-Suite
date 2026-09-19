@@ -53,8 +53,9 @@ final class ActivityLogLite implements SettingsModuleInterface {
         echo '<form method="get" style="display:flex;gap:8px;align-items:end;margin:12px 0 16px"><input type="hidden" name="page" value="smg-site-suite-activity-log"><label>'.esc_html__('Type','smg-site-suite').'<br><select name="type"><option value="">'.esc_html__('All','smg-site-suite').'</option>';
         foreach(['login','logout','plugin','theme','content'] as $option)echo '<option value="'.esc_attr($option).'" '.selected($type,$option,false).'>'.esc_html(ucfirst($option)).'</option>';
         echo '</select></label><label>'.esc_html__('User ID','smg-site-suite').'<br><input type="number" min="1" name="user_id" value="'.esc_attr($userId?:'').'"></label><button class="button">'.esc_html__('Filter','smg-site-suite').'</button></form>';
-        $clear=wp_nonce_url(admin_url('admin-post.php?action=smg_site_suite_clear_activity_log'),'smg_site_suite_clear_activity_log');
-        echo '<p><a class="button" href="'.esc_url($clear).'" onclick="return confirm(''.esc_js(__('Clear the activity log?','smg-site-suite')).'')">'.esc_html__('Clear Log','smg-site-suite').'</a></p>';
+        echo '<form method="post" action="'.esc_url(admin_url('admin-post.php')).'" style="margin:0 0 16px"><input type="hidden" name="action" value="smg_site_suite_clear_activity_log">';
+        wp_nonce_field('smg_site_suite_clear_activity_log');
+        echo '<button class="button">'.esc_html__('Clear Log','smg-site-suite').'</button></form>';
         echo '<table class="widefat striped"><thead><tr><th>'.esc_html__('Time','smg-site-suite').'</th><th>'.esc_html__('Type','smg-site-suite').'</th><th>'.esc_html__('User','smg-site-suite').'</th><th>'.esc_html__('Activity','smg-site-suite').'</th></tr></thead><tbody>';
         foreach(array_reverse($log) as $row){
             $user=get_userdata((int)($row['user']??0));
