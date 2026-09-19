@@ -18,9 +18,6 @@
   <rule ref="WordPress.Security.ValidatedSanitizedInput">
     <type>error</type>
   </rule>
-  <rule ref="WordPress.Security.NonceVerification">
-    <type>error</type>
-  </rule>
   <rule ref="WordPress.Security.EscapeOutput">
     <type>error</type>
   </rule>
