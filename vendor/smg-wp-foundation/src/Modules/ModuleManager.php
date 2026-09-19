@@ -57,10 +57,11 @@ final class ModuleManager {
         $dependencies = $this->dependencies->check($module);
 
         if (!$dependencies['available']) {
-            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are internal diagnostics, not HTML output.
+            // phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception messages are internal diagnostics, not HTML output.
             throw new RuntimeException(
                 'Cannot activate module; missing dependencies: '.implode(', ', $dependencies['missing'])
             );
+            // phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
         }
 
         $instance = $this->instance($module);
