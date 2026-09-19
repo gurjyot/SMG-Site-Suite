@@ -33,7 +33,6 @@ final class PublicPreviewDrafts implements SettingsModuleInterface {
         if(!$post instanceof \WP_Post||!current_user_can('edit_post',$post->ID))return;
         if(!in_array($post->post_status,['draft','pending','future'],true))return;
 
-        if($post->ID!==absint($_GET['smg_post']))return [];
         $data=get_post_meta($post->ID,self::META,true);
         $token=is_array($data)?(string)($data['token']??''):'';
         $expires=is_array($data)?(int)($data['expires']??0):0;
@@ -81,6 +80,7 @@ final class PublicPreviewDrafts implements SettingsModuleInterface {
         if(is_admin()||empty($_GET['smg_preview'])||empty($_GET['smg_post'])||!$query->is_main_query()||count($posts)!==1)return $posts;
         $post=$posts[0]??null;
         if(!$post instanceof \WP_Post||$post->post_status==='publish')return $posts;
+        if($post->ID!==absint($_GET['smg_post']))return [];
 
         $data=get_post_meta($post->ID,self::META,true);
         $provided=sanitize_text_field(wp_unslash($_GET['smg_preview']));
