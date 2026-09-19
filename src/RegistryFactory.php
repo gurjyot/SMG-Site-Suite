@@ -125,6 +125,10 @@ use SMG\SiteSuite\Modules\WooCommerce\ProductSkuColumn;
 use SMG\SiteSuite\Modules\WooCommerce\OrderItemSummaryColumn;
 use SMG\SiteSuite\Modules\WooCommerce\CouponUsageColumn;
 use SMG\SiteSuite\Modules\WooCommerce\EmptyCartButton;
+use SMG\SiteSuite\Modules\Admin\AutoloadOptionsReport;
+use SMG\SiteSuite\Modules\Admin\TransientViewer;
+use SMG\SiteSuite\Modules\Admin\RewriteRulesViewer;
+use SMG\SiteSuite\Modules\Admin\SiteInventoryExport;
 final class RegistryFactory {
     public static function make():ModuleRegistry{
         $r=(new ModuleRegistry())->addCategory('admin',__('Admin','smg-site-suite'))->addCategory('content',__('Content','smg-site-suite'))->addCategory('media',__('Media','smg-site-suite'))->addCategory('performance',__('Performance','smg-site-suite'))->addCategory('security',__('Security','smg-site-suite'))->addCategory('utilities',__('Utilities','smg-site-suite'))->addCategory('users',__('Users','smg-site-suite'))->addCategory('email',__('Email','smg-site-suite'))->addCategory('woocommerce',__('WooCommerce','smg-site-suite'));
@@ -252,6 +256,10 @@ final class RegistryFactory {
             ['order-item-summary-column','Order Item Summary Column','Show a compact product/quantity summary in WooCommerce legacy and HPOS order lists.','woocommerce',OrderItemSummaryColumn::class,['woocommerce','orders','items','hpos'],['admin'],'low',false,['plugins'=>['woocommerce/woocommerce.php']]],
             ['coupon-usage-column','Coupon Usage Column','Show WooCommerce coupon usage counts and expiry dates in the coupon list.','woocommerce',CouponUsageColumn::class,['woocommerce','coupons','usage','admin'],['admin'],'low',false,['plugins'=>['woocommerce/woocommerce.php']]],
             ['empty-cart-button','Empty Cart Button','Add a nonce-protected Empty Cart button to the classic WooCommerce cart.','woocommerce',EmptyCartButton::class,['woocommerce','cart','button'],['frontend'],'low',true,['plugins'=>['woocommerce/woocommerce.php']]],
+            ['autoload-options-report','Autoload Options Report','Read-only report of the largest autoloaded WordPress options and their approximate sizes.','admin',AutoloadOptionsReport::class,['database','autoload','performance','diagnostics'],['admin'],'low',false,[]],
+            ['transient-viewer','Transient Viewer','Read-only overview of stored WordPress transients, sizes, and expiry times.','admin',TransientViewer::class,['transients','cache','diagnostics'],['admin'],'low',false,[]],
+            ['rewrite-rules-viewer','Rewrite Rules Viewer','Read-only view of the WordPress rewrite-rule table for permalink diagnostics.','admin',RewriteRulesViewer::class,['rewrite rules','permalinks','diagnostics'],['admin'],'low',false,[]],
+            ['site-inventory-export','Site Inventory Export','Export a settings-free JSON inventory of WordPress, runtime, theme, plugins, and active Site Suite modules.','admin',SiteInventoryExport::class,['inventory','export','agency','diagnostics'],['admin'],'low',false,[]],
             ['auto-update-email-controls','Auto-Update Email Controls','Optionally suppress WordPress core, plugin, and theme automatic update notification emails.','email',AutoUpdateEmailControls::class,['email','updates','notifications'],['all'],'low',true,[]],
             ['sanitize-upload-filenames','Sanitize Upload Filenames','Normalize new upload filenames to lowercase ASCII kebab-case.','media',SanitizeUploadFilenames::class,['media','filenames','uploads'],['admin','ajax','rest'],'low',false,[]],
             ['temporary-login','Temporary Login','Create one-use expiring administrator access links for support or development.','users',TemporaryLogin::class,['temporary login','support','access'],['all'],'high',false,[]],
