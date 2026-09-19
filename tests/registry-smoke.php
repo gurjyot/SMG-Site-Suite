@@ -7,12 +7,12 @@ SMG\SiteSuite\Autoloader::register();
 $registry=SMG\SiteSuite\RegistryFactory::make();
 $modules=$registry->all();
 
-if(count($modules)!==32)throw new RuntimeException('Expected 32 registered modules, got '.count($modules));
+if(count($modules)!==35)throw new RuntimeException('Expected 35 registered modules, got '.count($modules));
 if(count(array_unique(array_keys($modules)))!==count($modules))throw new RuntimeException('Duplicate module slugs detected.');
 
 foreach([
     'disable-comments','duplicate-content','safe-svg-upload','image-size-control',
-    'disable-emojis','disable-embeds','clean-wp-head','disable-dashicons-frontend','hide-wp-version','disable-xml-rpc','disable-application-passwords','disable-file-editing','show-ids','active-plugins-first','featured-image-column','disable-admin-bar-frontend','hide-admin-notices','footer-timezone','buy-now',
+    'disable-emojis','disable-embeds','clean-wp-head','disable-dashicons-frontend','hide-wp-version','disable-xml-rpc','disable-application-passwords','disable-file-editing','show-ids','active-plugins-first','featured-image-column','disable-admin-bar-frontend','hide-admin-notices','footer-timezone','search-visibility-status','last-login-column','registration-date-column','buy-now',
     'shipping-progress','payment-method-column','order-phone-column','cod-rules','fomo-sales-notifications'
 ] as $required){
     if(!isset($modules[$required]))throw new RuntimeException('Required module missing: '.$required);
