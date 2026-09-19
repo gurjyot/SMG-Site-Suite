@@ -7,7 +7,14 @@ final class RedirectManager implements SettingsModuleInterface {
     private const OPTION='smg_site_suite_redirects';
     private const STATS='smg_site_suite_redirect_stats';
 
-    public function register():void{add_action('template_redirect',[$this,'redirect'],0);}
+    public function register():void{
+        add_action('template_redirect',[$this,'redirect'],0);
+        add_action('admin_menu',[$this,'menu'],45);
+    }
+
+    public function menu():void{
+        add_submenu_page('smg-site-suite',__('Redirect Stats','smg-site-suite'),__('Redirect Stats','smg-site-suite'),'manage_options','smg-site-suite-redirect-stats',[$this,'renderStats']);
+    }
 
     public function settingsSchema():array{
         return [['key'=>'rules','type'=>'textarea','label'=>__('Redirect rules','smg-site-suite'),'description'=>__("One per line: /old-path => /new-path | 301\nSupported codes: 301, 302, 307, 308. Only local paths are allowed.",'smg-site-suite')]];
@@ -38,6 +45,19 @@ final class RedirectManager implements SettingsModuleInterface {
             $out[$from]=['to'=>$to,'code'=>$code];
         }
         return $out;
+    }
+
+    public function renderStats():void{
+        if(!current_user_can('manage_options'))return;
+        $stats=get_option(self::STATS,[]);if(!is_array($stats))$stats=[];
+        $rules=$this->rules();
+        echo '<div class="wrap"><h1>'.esc_html__('Redirect Statistics','smg-site-suite').'</h1>';
+        echo '<table class="widefat striped"><thead><tr><th>'.esc_html__('From','smg-site-suite').'</th><th>'.esc_html__('To','smg-site-suite').'</th><th>'.esc_html__('Code','smg-site-suite').'</th><th>'.esc_html__('Hits','smg-site-suite').'</th><th>'.esc_html__('Last Used','smg-site-suite').'</th></tr></thead><tbody>';
+        foreach($rules as $from=>$rule){
+            $row=$stats[$from]??['hits'=>0,'last'=>0];
+            echo '<tr><td><code>'.esc_html($from).'</code></td><td><code>'.esc_html((string)$rule['to']).'</code></td><td>'.esc_html((string)$rule['code']).'</td><td>'.esc_html((string)($row['hits']??0)).'</td><td>'.esc_html(!empty($row['last'])?wp_date('Y-m-d H:i',(int)$row['last']):'—').'</td></tr>';
+        }
+        echo '</tbody></table></div>';
     }
 
     private function recordHit(string $from):void{
