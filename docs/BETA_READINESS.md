@@ -7,15 +7,18 @@ This checklist is a release gate. Do not call a build beta-ready unless every re
 - [x] PHP syntax matrix on PHP 8.0, 8.1, 8.2, and 8.3.
 - [x] Registry smoke: unique slugs, registered classes, WooCommerce dependency declarations.
 - [x] JavaScript syntax checks.
+- [x] Minimum runtime: WordPress 6.5.11 + PHP 8.0 activates and passes core lifecycle smoke.
 - [x] Official WordPress Plugin Check workflow.
-- [ ] Real WordPress/WooCommerce integration matrix:
+- [x] Real WordPress/WooCommerce integration matrix:
   - WordPress 7.1.1 + WooCommerce 11.1.1 + PHP 8.3.
   - WordPress 7.0.5 + WooCommerce 10.9.4 + PHP 8.3.
   - inactive-module isolation.
   - WooCommerce CRUD order creation/reload.
   - HPOS migration and CRUD rerun.
-- [ ] Exact packaged ZIP installs and activates successfully on clean WordPress.
-- [ ] Packaged ZIP contains only intended shipping files.
+  - Store API server-contract smoke for Order Amount Rules and Auto Apply Coupon.
+  - Checkout Blocks compatibility warning contract.
+- [x] Exact packaged ZIP installs and activates successfully on clean WordPress.
+- [x] Packaged ZIP contains only intended shipping files.
 
 ## Compatibility policy
 
@@ -123,9 +126,9 @@ Run these on a staging site with a backup and a second administrator account.
 ## Performance checks
 
 - [x] Inactive module implementation files are required to remain unloaded in integration CI.
-- [ ] Baseline request query count recorded with Site Suite active and zero modules.
-- [ ] Baseline included-file count recorded.
-- [ ] Compare zero-module Site Suite vs Site Suite disabled.
+- [x] Baseline request query count recorded with Site Suite active and zero modules.
+- [x] Baseline included-file count recorded.
+- [x] Compare zero-module Site Suite vs Site Suite disabled.
 - [ ] Representative 10-module profile recorded.
 - [ ] Woo storefront profile recorded with representative Woo modules.
 - [ ] No module performs an unbounded query during ordinary frontend requests.
@@ -133,10 +136,10 @@ Run these on a staging site with a backup and a second administrator account.
 ## Release package
 
 - [x] Deterministic ZIP packager exists.
-- [ ] Exact ZIP install smoke green.
+- [x] Exact ZIP install smoke green.
 - [ ] Version changed from `0.1.0-dev` to beta version only after gates pass.
 - [ ] Changelog updated with beta scope.
-- [ ] No development/test/workflow files inside ZIP.
+- [x] No development/test/workflow files inside ZIP.
 - [ ] ZIP inspected for secrets, credentials, local paths, and private reference-plugin code.
 
 ## Beta decision
