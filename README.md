@@ -29,7 +29,7 @@ Presets are additive: they enable useful modules without wiping unrelated active
 
 ## Current catalog
 
-**35 modules** across Admin, Content, Media, Performance, Security, Utilities, Users, and WooCommerce.
+**55 modules** across Admin, Content, Media, Performance, Security, Utilities, Users, and WooCommerce.
 
 Highlights include:
 
@@ -59,6 +59,19 @@ Highlights include:
 - Search Visibility Warning
 - Last Login Column
 - Registration Date Column
+- Recover Missed Scheduled Posts
+- Disable Big Image Scaling
+- Disable Self Pingbacks
+- Remove Comment Website Field
+- Email Sender Identity
+- System Summary
+- Maintenance Mode
+- Head / Body / Footer Code
+- Generic Login Errors
+- Search Posts Only
+- Disable Texturize
+- Remove Recent Comments CSS
+- Login / Logout Redirects
 - Disable Product Reviews
 - Payment Method Column
 - Order Phone Column
@@ -68,6 +81,7 @@ Highlights include:
 - COD Amount Rules
 - Free Shipping Progress Bar
 - FOMO Sales Notifications
+- WooCommerce Wishlist
 
 ## FOMO performance model
 
@@ -75,6 +89,6 @@ FOMO does not query orders during visitor requests. It snapshots up to 20 recent
 
 ## Next larger module systems
 
-Wishlist, rule-based Discounts, Change/Hide Login URL, Code Snippets, plus further WooCommerce utilities.
+Rule-based Discounts, Change/Hide Login URL, Code Snippets, advanced wishlist features (sharing, multiple lists, notes), plus further WooCommerce utilities.
 
 See [Architecture](docs/ARCHITECTURE.md).
