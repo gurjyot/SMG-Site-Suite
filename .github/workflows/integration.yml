@@ -79,7 +79,7 @@ jobs:
       - name: Enable HPOS
         run: |
           cd /tmp/smg-wp
-          wp wc hpos enable --for-new-shop --ignore-plugin-compatibility
+          wp wc hpos enable --with-sync --ignore-plugin-compatibility
           wp wc hpos status
 
       - name: Runtime smoke on HPOS
