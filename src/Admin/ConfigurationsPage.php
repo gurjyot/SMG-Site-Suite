@@ -93,16 +93,59 @@ final class ConfigurationsPage {
         $this->authorize();
         $slug=isset($_GET['preset'])?sanitize_key(wp_unslash($_GET['preset'])):'';
         check_admin_referer('smg_site_suite_preset_'.$slug);
-        $presets=self::presets();
-        if(!isset($presets[$slug]))wp_die(esc_html__('Unknown preset.','smg-site-suite'));
 
-        $active=$this->manager->state()->active();
+        $result=$this->applyPresetBySlug($slug);
+        if(is_wp_error($result)){
+            wp_die(esc_html($result->get_error_message()));
+        }
+
+        $this->redirectNotice('preset');
+    }
+
+    public function applyPresetBySlug(string $slug){
+        $slug=sanitize_key($slug);
+        $presets=self::presets();
+
+        if(!isset($presets[$slug])){
+            return new \WP_Error(
+                'smg_site_suite_unknown_preset',
+                __('Unknown Site Suite preset.','smg-site-suite')
+            );
+        }
+
+        $activated=[];
+        $alreadyActive=[];
+        $unavailable=[];
+        $failed=[];
+
         foreach($presets[$slug]['modules'] as $module){
             $status=$this->manager->status($module);
-            if(!$status['known']||!$status['available']||in_array($module,$active,true))continue;
-            try{$this->manager->activate($module);}catch(RuntimeException $e){continue;}
+
+            if(!$status['known']||!$status['available']){
+                $unavailable[]=$module;
+                continue;
+            }
+
+            if($status['active']){
+                $alreadyActive[]=$module;
+                continue;
+            }
+
+            try{
+                $this->manager->activate($module);
+                $activated[]=$module;
+            }catch(RuntimeException $error){
+                $failed[]=$module;
+            }
         }
-        $this->redirectNotice('preset');
+
+        return [
+            'preset'=>$slug,
+            'activated'=>$activated,
+            'already_active'=>$alreadyActive,
+            'unavailable'=>$unavailable,
+            'failed'=>$failed,
+        ];
     }
 
     public function export():void{

@@ -48,6 +48,8 @@ $abilityNames = [
     'smg-site-suite/get-database-table-sizes',
     'smg-site-suite/list-rewrite-rules',
     'smg-site-suite/get-site-health',
+    'smg-site-suite/list-presets',
+    'smg-site-suite/apply-preset',
 ];
 
 foreach ($abilityNames as $name) {
@@ -83,6 +85,8 @@ $siteInventoryAbility = wp_get_ability('smg-site-suite/get-site-inventory');
 $databaseSizesAbility = wp_get_ability('smg-site-suite/get-database-table-sizes');
 $rewriteRulesAbility = wp_get_ability('smg-site-suite/list-rewrite-rules');
 $siteHealthAbility = wp_get_ability('smg-site-suite/get-site-health');
+$listPresetsAbility = wp_get_ability('smg-site-suite/list-presets');
+$applyPresetAbility = wp_get_ability('smg-site-suite/apply-preset');
 
 $originalActive = (array) get_option('smg_site_suite_active_modules', []);
 $originalDashboard = get_option('smg_site_suite_custom_dashboard', null);
@@ -393,6 +397,70 @@ try {
             $assert(
                 $ids === ['cron', 'debug', 'https', 'search_visibility'],
                 'Site health ability returned an unexpected check set.'
+            );
+        }
+    }
+
+    if ($listPresetsAbility instanceof WP_Ability) {
+        $presetList=$listPresetsAbility->execute([]);
+        $assert(!is_wp_error($presetList),'Preset listing ability returned an error.');
+
+        if(is_array($presetList)){
+            $assert(
+                ($presetList['count']??0)===7,
+                'Preset listing ability returned the wrong preset count.'
+            );
+
+            $slugs=array_column((array)($presetList['presets']??[]),'slug');
+            $assert(
+                in_array('clean-wordpress',$slugs,true),
+                'Preset listing ability is missing Clean WordPress.'
+            );
+        }
+    }
+
+    if($applyPresetAbility instanceof WP_Ability){
+        $unknown=$applyPresetAbility->execute(['preset'=>'not-a-preset']);
+        $assert(
+            is_wp_error($unknown),
+            'Apply preset ability accepted an unknown preset.'
+        );
+
+        $applied=$applyPresetAbility->execute(['preset'=>'clean-wordpress']);
+        $assert(!is_wp_error($applied),'Apply preset ability returned an error.');
+
+        if(is_array($applied)){
+            $assert(
+                ($applied['preset']??'')==='clean-wordpress',
+                'Apply preset ability returned the wrong preset slug.'
+            );
+            $expected=[
+                'disable-emojis',
+                'disable-embeds',
+                'disable-xml-rpc',
+                'disable-dashicons-frontend',
+                'clean-wp-head',
+                'disable-admin-bar-frontend',
+            ];
+            $active=(array)get_option('smg_site_suite_active_modules',[]);
+            foreach($expected as $slug){
+                $assert(
+                    in_array($slug,$active,true),
+                    "Apply preset ability did not activate: {$slug}"
+                );
+            }
+        }
+
+        $secondApply=$applyPresetAbility->execute(['preset'=>'clean-wordpress']);
+        $assert(!is_wp_error($secondApply),'Repeated preset application returned an error.');
+        if(is_array($secondApply)){
+            $assert(
+                ($secondApply['activated']??[])===[],
+                'Repeated preset application was not idempotent.'
+            );
+            $assert(
+                count((array)($secondApply['already_active']??[]))===6,
+                'Repeated preset application did not report already-active modules.'
             );
         }
     }

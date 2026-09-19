@@ -31,6 +31,8 @@ The abilities layer is an adapter over the existing Site Suite registry, module 
 | `smg-site-suite/get-database-table-sizes` | Read bounded database table size data | Yes | No |
 | `smg-site-suite/list-rewrite-rules` | Read bounded WordPress rewrite rules | Yes | No |
 | `smg-site-suite/get-site-health` | Read HTTPS/debug/search visibility/WP-Cron health checks | Yes | No |
+| `smg-site-suite/list-presets` | Discover built-in Site Suite presets | Yes | No |
+| `smg-site-suite/apply-preset` | Additively enable a built-in preset | No | No |
 
 All abilities declare typed input/output schemas and idempotency annotations.
 
@@ -55,6 +57,7 @@ The WordPress Abilities API performs schema validation and invokes the permissio
 9. Redirect abilities accept local paths only, reject direct loops, and preserve the existing Redirect Manager as the source of truth.
 10. Diagnostic abilities return bounded structured data and do not expose plugin settings, passwords, email logs, user records, or WooCommerce customer/order data.
 11. Site Health abilities mirror existing Site Suite checks and remain read-only; agents do not change production settings through health diagnostics.
+12. Preset application is additive and idempotent: it may enable preset modules but never disables unrelated active modules or replaces configuration.
 
 ## MCP
 
@@ -81,5 +84,6 @@ Integration CI verifies:
 - site inventory returns settings-free runtime/theme/plugin/module data;
 - database size and rewrite-rule abilities enforce bounded result limits;
 - Site Health returns the four existing Site Suite checks as structured read-only results;
+- preset discovery returns the seven built-in presets and preset application is additive/idempotent;
 - Protected Owner blocks another administrator from ability execution;
 - WordPress 6.5 minimum-runtime activation remains unaffected.

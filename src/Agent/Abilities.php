@@ -1,6 +1,7 @@
 <?php
 namespace SMG\SiteSuite\Agent;
 
+use SMG\SiteSuite\Admin\ConfigurationsPage;
 use SMG\SiteSuite\Modules\Admin\CronViewer;
 use SMG\SiteSuite\Modules\Admin\DatabaseTableSizes;
 use SMG\SiteSuite\Modules\Admin\ProtectedOwner;
@@ -405,6 +406,47 @@ final class Abilities {
                 'meta' => $this->meta(true, false, true),
             ]
         );
+        wp_register_ability(
+            'smg-site-suite/list-presets',
+            [
+                'label' => __('List Site Suite Presets', 'smg-site-suite'),
+                'description' => __(
+                    'Lists the built-in Site Suite presets and the modules each preset enables.',
+                    'smg-site-suite'
+                ),
+                'category' => self::CATEGORY,
+                'input_schema' => $this->emptyInputSchema(),
+                'output_schema' => $this->presetListSchema(),
+                'execute_callback' => [$this, 'listPresets'],
+                'permission_callback' => [$this, 'canManageSiteSuite'],
+                'meta' => $this->meta(true, false, true),
+            ]
+        );
+
+        wp_register_ability(
+            'smg-site-suite/apply-preset',
+            [
+                'label' => __('Apply Site Suite Preset', 'smg-site-suite'),
+                'description' => __(
+                    'Applies one built-in Site Suite preset additively without disabling unrelated active modules.',
+                    'smg-site-suite'
+                ),
+                'category' => self::CATEGORY,
+                'input_schema' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'preset' => ['type' => 'string'],
+                    ],
+                    'required' => ['preset'],
+                    'additionalProperties' => false,
+                ],
+                'output_schema' => $this->presetApplySchema(),
+                'execute_callback' => [$this, 'applyPreset'],
+                'permission_callback' => [$this, 'canManageSiteSuite'],
+                'meta' => $this->meta(false, false, true),
+            ]
+        );
+
     }
 
     public function canManageSiteSuite(): bool {
@@ -724,6 +766,31 @@ final class Abilities {
             'recommended' => $recommended,
             'checks' => $checks,
         ];
+    }
+
+    public function listPresets(): array {
+        $presets=[];
+
+        foreach(ConfigurationsPage::presets() as $slug=>$preset){
+            $modules=array_values(array_map('sanitize_key',(array)($preset['modules']??[])));
+            $presets[]=[
+                'slug'=>sanitize_key((string)$slug),
+                'name'=>(string)($preset['name']??''),
+                'description'=>(string)($preset['description']??''),
+                'module_count'=>count($modules),
+                'modules'=>$modules,
+            ];
+        }
+
+        return [
+            'count'=>count($presets),
+            'presets'=>$presets,
+        ];
+    }
+
+    public function applyPreset(array $input){
+        $slug=isset($input['preset'])?sanitize_key((string)$input['preset']):'';
+        return (new ConfigurationsPage($this->manager))->applyPresetBySlug($slug);
     }
 
     private function requireActiveModule(string $slug) {
@@ -1119,6 +1186,61 @@ final class Abilities {
             ],
             'required' => ['count', 'recommended', 'checks'],
             'additionalProperties' => false,
+        ];
+    }
+
+    private function presetListSchema(): array {
+        return [
+            'type'=>'object',
+            'properties'=>[
+                'count'=>['type'=>'integer'],
+                'presets'=>[
+                    'type'=>'array',
+                    'items'=>[
+                        'type'=>'object',
+                        'properties'=>[
+                            'slug'=>['type'=>'string'],
+                            'name'=>['type'=>'string'],
+                            'description'=>['type'=>'string'],
+                            'module_count'=>['type'=>'integer'],
+                            'modules'=>[
+                                'type'=>'array',
+                                'items'=>['type'=>'string'],
+                            ],
+                        ],
+                        'required'=>['slug','name','description','module_count','modules'],
+                        'additionalProperties'=>false,
+                    ],
+                ],
+            ],
+            'required'=>['count','presets'],
+            'additionalProperties'=>false,
+        ];
+    }
+
+    private function presetApplySchema(): array {
+        $list=[
+            'type'=>'array',
+            'items'=>['type'=>'string'],
+        ];
+
+        return [
+            'type'=>'object',
+            'properties'=>[
+                'preset'=>['type'=>'string'],
+                'activated'=>$list,
+                'already_active'=>$list,
+                'unavailable'=>$list,
+                'failed'=>$list,
+            ],
+            'required'=>[
+                'preset',
+                'activated',
+                'already_active',
+                'unavailable',
+                'failed',
+            ],
+            'additionalProperties'=>false,
         ];
     }
 
