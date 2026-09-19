@@ -140,8 +140,12 @@ final class Abilities {
                         'slug' => ['type' => 'string'],
                         'schema' => ['type' => 'object'],
                         'settings' => ['type' => 'object'],
+                        'redacted_fields' => [
+                            'type' => 'array',
+                            'items' => ['type' => 'string'],
+                        ],
                     ],
-                    'required' => ['slug', 'schema', 'settings'],
+                    'required' => ['slug', 'schema', 'settings', 'redacted_fields'],
                     'additionalProperties' => false,
                 ],
                 'execute_callback' => [$this, 'getModuleSettings'],
@@ -167,8 +171,12 @@ final class Abilities {
                             'pattern' => '^[a-z0-9]+(?:-[a-z0-9]+)*$',
                         ],
                         'settings' => ['type' => 'object'],
+                        'redacted_fields' => [
+                            'type' => 'array',
+                            'items' => ['type' => 'string'],
+                        ],
                     ],
-                    'required' => ['slug', 'settings'],
+                    'required' => ['slug', 'settings', 'redacted_fields'],
                     'additionalProperties' => false,
                 ],
                 'output_schema' => [
@@ -553,10 +561,13 @@ final class Abilities {
             );
         }
 
+        $safe = $this->agentSafeSettings($module);
+
         return [
             'slug' => $definition->slug(),
-            'schema' => $module->settingsSchema(),
-            'settings' => $module->settings(),
+            'schema' => $this->agentSafeSettingsSchema($module->settingsSchema()),
+            'settings' => $safe['settings'],
+            'redacted_fields' => $safe['redacted_fields'],
         ];
     }
 
@@ -580,9 +591,12 @@ final class Abilities {
             );
         }
 
+        $safe = $this->agentSafeSettings($module);
+
         return [
             'slug' => $definition->slug(),
-            'settings' => $module->settings(),
+            'settings' => $safe['settings'],
+            'redacted_fields' => $safe['redacted_fields'],
         ];
     }
 
@@ -822,6 +836,99 @@ final class Abilities {
         }
 
         return true;
+    }
+
+    private function agentSafeSettings($module): array {
+        $settings = $module->settings();
+        $redacted = [];
+
+        foreach ($module->settingsSchema() as $field) {
+            if (!is_array($field)) {
+                continue;
+            }
+
+            $key = isset($field['key']) ? (string) $field['key'] : '';
+            $type = isset($field['type']) ? strtolower((string) $field['type']) : '';
+
+            if ($key === '' || !$this->isSensitiveSetting($key, $type)) {
+                continue;
+            }
+
+            if (array_key_exists($key, $settings)) {
+                unset($settings[$key]);
+            }
+            $redacted[] = $key;
+        }
+
+        $settings = $this->redactSensitiveKeys(
+            is_array($settings) ? $settings : [],
+            '',
+            $redacted
+        );
+
+        return [
+            'settings' => $settings,
+            'redacted_fields' => array_values(array_unique($redacted)),
+        ];
+    }
+
+    private function agentSafeSettingsSchema(array $schema): array {
+        foreach ($schema as $index => $field) {
+            if (!is_array($field)) {
+                continue;
+            }
+
+            $key = isset($field['key']) ? (string) $field['key'] : '';
+            $type = isset($field['type']) ? strtolower((string) $field['type']) : '';
+
+            if ($key === '' || !$this->isSensitiveSetting($key, $type)) {
+                continue;
+            }
+
+            unset($field['default']);
+            $field['sensitive'] = true;
+            $schema[$index] = $field;
+        }
+
+        return $schema;
+    }
+
+    private function redactSensitiveKeys(
+        array $values,
+        string $prefix,
+        array &$redacted
+    ): array {
+        foreach ($values as $key => $value) {
+            $name = (string) $key;
+            $path = $prefix === '' ? $name : $prefix.'.'.$name;
+
+            if (is_string($key) && $this->isSensitiveSetting($name, '')) {
+                unset($values[$key]);
+                $redacted[] = $path;
+                continue;
+            }
+
+            if (is_array($value)) {
+                $values[$key] = $this->redactSensitiveKeys(
+                    $value,
+                    $path,
+                    $redacted
+                );
+            }
+        }
+
+        return $values;
+    }
+
+    private function isSensitiveSetting(string $key, string $type): bool {
+        if (in_array($type, ['password', 'secret'], true)) {
+            return true;
+        }
+
+        return (bool) preg_match(
+            '/(?:pass(?:word)?|secret|token|api[_-]?key|private[_-]?key|client[_-]?secret|auth[_-]?key|access[_-]?key)/i',
+            $key
+        );
     }
 
     private function definitionFromInput(array $input) {
