@@ -7,13 +7,13 @@ SMG\SiteSuite\Autoloader::register();
 $registry=SMG\SiteSuite\RegistryFactory::make();
 $modules=$registry->all();
 
-if(count($modules)!==23)throw new RuntimeException('Expected 23 registered modules, got '.count($modules));
+if(count($modules)!==24)throw new RuntimeException('Expected 24 registered modules, got '.count($modules));
 if(count(array_unique(array_keys($modules)))!==count($modules))throw new RuntimeException('Duplicate module slugs detected.');
 
 foreach([
     'disable-comments','duplicate-content','safe-svg-upload','image-size-control',
     'disable-emojis','disable-embeds','clean-wp-head','hide-wp-version','disable-xml-rpc','disable-application-passwords','buy-now',
-    'shipping-progress','payment-method-column','cod-rules','fomo-sales-notifications'
+    'shipping-progress','payment-method-column','order-phone-column','cod-rules','fomo-sales-notifications'
 ] as $required){
     if(!isset($modules[$required]))throw new RuntimeException('Required module missing: '.$required);
 }
