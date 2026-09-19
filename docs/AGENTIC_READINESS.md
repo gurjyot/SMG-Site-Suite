@@ -27,6 +27,9 @@ The abilities layer is an adapter over the existing Site Suite registry, module 
 | `smg-site-suite/list-redirects` | Read redirect rules and usage stats | Yes | No |
 | `smg-site-suite/upsert-redirect` | Create or replace a local redirect | No | Yes |
 | `smg-site-suite/delete-redirect` | Delete a local redirect | No | Yes |
+| `smg-site-suite/get-site-inventory` | Read runtime/theme/plugin/Site Suite inventory | Yes | No |
+| `smg-site-suite/get-database-table-sizes` | Read bounded database table size data | Yes | No |
+| `smg-site-suite/list-rewrite-rules` | Read bounded WordPress rewrite rules | Yes | No |
 
 All abilities declare typed input/output schemas and idempotency annotations.
 
@@ -49,6 +52,7 @@ The WordPress Abilities API performs schema validation and invokes the permissio
 7. Agent access must never weaken Protected Owner or WordPress capability checks.
 8. Module-specific operational abilities require that module to be active; agent access does not silently bypass disabled modules.
 9. Redirect abilities accept local paths only, reject direct loops, and preserve the existing Redirect Manager as the source of truth.
+10. Diagnostic abilities return bounded structured data and do not expose plugin settings, passwords, email logs, user records, or WooCommerce customer/order data.
 
 ## MCP
 
@@ -72,5 +76,7 @@ Integration CI verifies:
 - operational abilities refuse to run while their module is inactive;
 - system summary, cron, and 404 data are returned as structured bounded results;
 - redirect create/list/delete round-trips use local-only validation and idempotent deletion;
+- site inventory returns settings-free runtime/theme/plugin/module data;
+- database size and rewrite-rule abilities enforce bounded result limits;
 - Protected Owner blocks another administrator from ability execution;
 - WordPress 6.5 minimum-runtime activation remains unaffected.
