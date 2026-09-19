@@ -83,7 +83,7 @@ try{
 
     // Wishlist activation should create or bind a published Wishlist page.
     delete_option('smg_site_suite_wishlist_page_id');
-    $existing=get_page_by_path('woocommerce-wishlist');
+    $existing=get_page_by_path('wishlist');
     $existingId=$existing instanceof WP_Post?(int)$existing->ID:0;
     $manager->activate('woocommerce-wishlist');
     $wishlistPageId=(int)get_option('smg_site_suite_wishlist_page_id',0);
