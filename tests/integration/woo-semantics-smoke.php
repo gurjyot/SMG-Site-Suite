@@ -22,6 +22,8 @@ $product->set_status('publish');
 $productId=$product->save();
 
 $couponId=0;
+$autoCouponId=0;
+$variableId=0;
 
 try{
     $assert($productId>0,'Could not create WooCommerce semantic-test product.');
